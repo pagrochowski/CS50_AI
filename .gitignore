@@ -1,0 +1,15 @@
+# Ignore specific files
+*.log
+.env
+
+# Ignore a directory and its contents
+node_modules/
+venv/
+env/ 
+.venv/
+
+# Ignore all files of a certain type
+*.pyc
+
+# Database
+# db.sqlite3
