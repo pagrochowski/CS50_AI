@@ -91,7 +91,3 @@ In the folder with docker-compose.yml:
 `docker-compose run --service-ports python-app bash` starts python bash command line
 `mariadb -h mysql -u root -p` opens connection to mysql database
 password: crimson
-
-## R
-
-

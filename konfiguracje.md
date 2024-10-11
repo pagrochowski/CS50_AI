@@ -1,5 +1,8 @@
 # Moje konfiguracje
 
+## CS50 - submit50, check50
+https://cs50.readthedocs.io/submit50/
+
 ## Ollama
 
 ## Gmail CTL
