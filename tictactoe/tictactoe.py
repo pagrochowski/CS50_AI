@@ -116,20 +116,103 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    raise NotImplementedError
+    # Determine player and strategy: X max, O min
+    if player(board) == X:
+        return max_value(board)
+    else:
+        return min_value(board)
 
+
+"""
+Print statements version
+def min_value(board):
+    if terminal(board):
+        return utility(board)
+    #optimal_action = None
+    v = float("inf")
+    for action in actions(board):
+        maximum = max_value(result(board, action))
+        print("min value: Action:", action)
+        print("min value: Max: " + str(maximum))
+        minimum = min(v, maximum)
+        print("min value: Min: " + str(minimum))
+        if v > minimum:
+            print("min value: Updating min to: " + str(minimum))
+            v = minimum
+            #optimal_action = action
+    print("min value: Returning min: " + str(v))    
+    return v
+"""
+
+"""
+NON PRINT STATEMENTS VERSION
 def min_value(board):
     if terminal(board):
         return utility(board)
     v = float("inf")
     for action in actions(board):
-        v = min(v, max_value(result(board, action)))
+        maximum = max_value(result(board, action))
+        minimum = min(v, maximum)
+        if v > minimum:
+            v = minimum
     return v
-
+"""
+"""
+NON PRINT STATEMENTS VERSION
 def max_value(board):
     if terminal(board):
         return utility(board)
     v = float("-inf")
     for action in actions(board):
-        v = max(v, min_value(result(board, action)))
+        minimum = min_value(result(board, action))
+        maximum = max(v, minimum)
+        if v < maximum:
+            v = maximum
     return v
+"""
+
+
+"""
+Print statements version
+def max_value(board):
+    if terminal(board):
+        return utility(board)
+    #optimal_action = None
+    v = float("-inf")
+    for action in actions(board):
+        minimum = min_value(result(board, action))
+        print("max_value: Action:", action)
+        print("max_value: Min: " + str(minimum))
+        maximum = max(v, minimum)
+        print("max_value: Max: " + str(maximum))
+        if v < maximum:
+            print("max_value: Updating max to: " + str(maximum))
+            v = maximum
+            #optimal_action = action
+    print("max_value: Returning max: " + str(v))
+    return v
+"""
+
+def min_value(board):
+    if terminal(board):
+        return utility(board), None
+    v = float("inf")
+    best_action = None
+    for action in actions(board):
+        value, _ = max_value(result(board, action))
+        if value < v:
+            v = value
+            best_action = action
+    return v, best_action
+
+def max_value(board):
+    if terminal(board):
+        return utility(board), None
+    v = float("-inf")
+    best_action = None
+    for action in actions(board):
+        value, _ = min_value(result(board, action))
+        if value > v:
+            v = value
+            best_action = action
+    return v, best_action
