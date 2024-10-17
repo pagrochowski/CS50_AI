@@ -1,14 +1,48 @@
 from minesweeper import Minesweeper, Sentence, MinesweeperAI
 
 def main():
-    board = Minesweeper(height=1, width=1, mines=1)
-    board.print()
-    cells = {(0, 0)}
+    ...
+
+
+"""
+TESTING MinesweeperAI CLASS
+"""
+
+
+def test_add_knowledge():
+    # Cell being checked is (0, 0) with a count of 1
+    cell = (0, 0)
+    count = 1
+
+    # Test adding knowledge
+    gameAI = MinesweeperAI()
+    gameAI.add_knowledge(cell, count)
+
+    # Assert knowledge has been added
+    assert gameAI.knowledge[0].cells == {(0, 0)}
+    assert gameAI.knowledge[0].count == 1
+
+
+"""
+TESTING SENTENCE CLASS
+"""
+def test_mark_safe():
+    # Test marking safe location at (0, 0)
+    cells = {(0, 0), (0, 1), (1, 0), (1, 1)}
     count = 1
     sentence = Sentence(cells, count)
-    print(sentence)
-    print(sentence.known_mines())
+    sentence.mark_safe((0, 0))
+    assert sentence.cells == {(0, 1), (1, 0), (1, 1)}
+    assert sentence.count == 1
 
+def test_mark_mine():
+    # Test marking a mine at location (0, 0)
+    cells = {(0, 0), (0, 1), (1, 0), (1, 1)}
+    count = 1
+    sentence = Sentence(cells, count)
+    sentence.mark_mine((0, 0))
+    assert sentence.cells == {(0, 1), (1, 0), (1, 1)}
+    assert sentence.count == 0
 
 def test_known_safes():
     # Test safes 0 out of 1
