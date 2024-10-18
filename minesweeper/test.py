@@ -9,7 +9,7 @@ TESTING MinesweeperAI CLASS
 """
 
 
-def test_add_knowledge():
+def test_add_knowledge_2x2_1_mine():
     # Cell being checked is (0, 0) with a count of 1
     cell = (0, 0)
     count = 1
@@ -19,8 +19,70 @@ def test_add_knowledge():
     gameAI.add_knowledge(cell, count)
 
     # Assert knowledge has been added
-    assert gameAI.knowledge[0].cells == {(0, 0)}
+    assert gameAI.knowledge[0].cells == {(0, 1), (1, 0), (1, 1)}
     assert gameAI.knowledge[0].count == 1
+
+def test_add_knowledge_2x2_3_mines():
+    """ 
+    Test marking any additional cells as safe or mines
+    CASE 1 - all neighbors are mines
+    """
+    cell = (0, 0)
+    count = 3
+
+    gameAI = MinesweeperAI()
+    gameAI.add_knowledge(cell, count)
+
+    assert gameAI.knowledge[0].cells == {(0, 1), (1, 0), (1, 1)}
+    assert gameAI.knowledge[0].count == 3
+    assert gameAI.mines == {(0, 1), (1, 0), (1, 1)}
+    assert gameAI.safes == {(0, 0)}
+
+
+def test_add_knowledge_2x2_0_mines():
+    """ 
+    Test marking any additional cells as safe or mines
+    CASE 2 - all neighbors are safe
+    """
+    cell = (0, 0)
+    count = 0
+
+    gameAI = MinesweeperAI()
+    gameAI.add_knowledge(cell, count)
+
+    assert gameAI.knowledge[0].cells == {(0, 1), (1, 0), (1, 1)}
+    assert gameAI.knowledge[0].count == 0
+    assert gameAI.mines == set()
+    assert gameAI.safes == {(0, 0), (0, 1), (1, 0), (1, 1)}
+
+def test_make_safe_move():
+    # Cells being checked are (0, 0), (0, 1), (1, 0), (1, 1) with a count of 2
+    safe_cells = {(0, 0), (0, 1)}
+    mine_cells = {(1, 0), (1, 1)}
+
+    # Test adding knowledge
+    gameAI = MinesweeperAI()
+    for cell in safe_cells:
+        gameAI.mark_safe(cell)
+
+    for cell in mine_cells:
+        gameAI.mark_mine(cell)
+    
+    assert gameAI.make_safe_move() in safe_cells and gameAI.make_safe_move() not in mine_cells
+
+
+def make_random_move():
+    gameAI = MinesweeperAI()
+    safe_cells = {(0, 0), (0, 1)}
+    mine_cells = {(1, 0), (1, 1)}
+
+    for cell in safe_cells:
+        gameAI.mark_safe(cell)
+
+    for cell in mine_cells:
+        gameAI.mark_mine(cell)
+
+    assert gameAI.make_random_move() not in safe_cells and gameAI.make_random_move() not in mine_cells
 
 
 """
