@@ -113,10 +113,14 @@ class Sentence():
         # Number of cells equals mines 
         if self.count == len(self.cells):
             set_of_mines = self.cells
+            
         
         # Number of cells does not equal mines
         else:
             set_of_mines = set()
+
+        if set_of_mines != set():
+            print("known_mines() added: ", set_of_mines)
 
         return set_of_mines
 
@@ -180,6 +184,7 @@ class MinesweeperAI():
         self.mines.add(cell)
         for sentence in self.knowledge:
             sentence.mark_mine(cell)
+        print("mark_mine(): ", cell)
 
     def mark_safe(self, cell):
         """
@@ -189,6 +194,7 @@ class MinesweeperAI():
         self.safes.add(cell)
         for sentence in self.knowledge:
             sentence.mark_safe(cell)
+        print("mark_safe(): ", cell)
 
     def add_knowledge(self, cell, count):
         """
@@ -219,13 +225,17 @@ class MinesweeperAI():
 
         self.knowledge.append(Sentence(neighbors, count))            
                     
-        # Mark any additional cells as safe or mines
+        # Mark cells as safe or mines
         for sentence in self.knowledge:
             if len(sentence.cells) == sentence.count:
+                print("adding known mine: ", sentence.known_mines())
                 self.mines.update(sentence.known_mines())
             if sentence.count == 0:
                 self.safes.update(sentence.known_safes())
-
+                
+        print("known_mines so far: ", self.mines)
+        print("known_safes left to explore: ", len(self.safes) - len(self.moves_made))
+        print("moves made so far: ", len(self.moves_made))
         
         # Add any new sentences to the AI's knowledge base
         knowledge_update = []
@@ -235,10 +245,15 @@ class MinesweeperAI():
                     if sentence.cells.issubset(new_sentence.cells):
                         new_sentence.count -= sentence.count
                         new_sentence.cells -= sentence.cells
-            knowledge_update.append(new_sentence)
+            if len(new_sentence.cells) > 0:
+                knowledge_update.append(new_sentence)
         self.knowledge = knowledge_update
 
-        
+        print("add_knowledge(): ", cell, count)
+        print("number of sentences: ", len(self.knowledge))
+        if len(self.knowledge) == 1:
+            print("only sentence: ", self.knowledge[0])
+
 
     def make_safe_move(self):
         """
@@ -256,8 +271,7 @@ class MinesweeperAI():
         for safe_cell in self.safes:
             if safe_cell not in self.moves_made and safe_cell not in self.mines:
                 return safe_cell
-
-        
+            
 
     def make_random_move(self):
         """
@@ -273,6 +287,9 @@ class MinesweeperAI():
                     possible_moves.add((i, j))
 
         if len(possible_moves) == 0:
+            print("No possible moves")
             return None
         
-        return random.choice(list(possible_moves))
+        random_choice = random.choice(list(possible_moves))
+        print("Random move at: ", random_choice)
+        return random_choice
