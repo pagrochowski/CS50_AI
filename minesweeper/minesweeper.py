@@ -1,5 +1,6 @@
 import itertools
 import random
+import copy
 
 
 class Minesweeper():
@@ -211,9 +212,20 @@ class MinesweeperAI():
             5) add any new sentences to the AI's knowledge base
                if they can be inferred from existing knowledge
         """
+        def mark_cells_as_safe_or_mines():       
+            # Mark cells as safe or mines
+            for sentence in self.knowledge:
+                if len(sentence.cells) == sentence.count and sentence.count > 0:
+                    print("adding known mine: ", sentence.known_mines())
+                    print("sentence cells: ", len(sentence.cells), "sentence count: ", sentence.count)
+                    self.mines.update(sentence.known_mines())
+                if sentence.count == 0:
+                    self.safes.update(sentence.known_safes())
+        
+        # Mark the cell as a move that has been made
         self.moves_made.add(cell)
         self.mark_safe(cell)
-
+        
         # Add the cell and neighboring cells to knowledge as sentence
         neighbors = set()
         for i in range(cell[0] - 1, cell[0] + 2):
@@ -223,31 +235,36 @@ class MinesweeperAI():
                         if (i, j) not in self.moves_made and (i, j) not in self.mines and (i, j) not in self.safes:
                             neighbors.add((i, j))
 
-        self.knowledge.append(Sentence(neighbors, count))            
-                    
-        # Mark cells as safe or mines
-        for sentence in self.knowledge:
-            if len(sentence.cells) == sentence.count:
-                print("adding known mine: ", sentence.known_mines())
-                self.mines.update(sentence.known_mines())
-            if sentence.count == 0:
-                self.safes.update(sentence.known_safes())
-                
+        self.knowledge.append(Sentence(neighbors, count))
+        mark_cells_as_safe_or_mines()
+
+        # Infer new sentences from existing knowledge
+        knowledge_update = []
+        knowledge_copy = copy.deepcopy(self.knowledge)
+        knowledge_copy = sorted(knowledge_copy, key=lambda sentence: len(sentence.cells), reverse=True)
+        print("Knowledge copy sentences sorted:")
+        for sentence in knowledge_copy:
+            print(sentence)
+        
+
+        for bigger_sentence in knowledge_copy:
+            for smaller_sentence in knowledge_copy:
+                if smaller_sentence.cells.issubset(bigger_sentence.cells):
+                    new_sentence = Sentence(bigger_sentence.cells - smaller_sentence.cells, bigger_sentence.count - smaller_sentence.count)
+                    if new_sentence not in knowledge_update and new_sentence.cells != set():
+                        knowledge_update.append(new_sentence)
+        
+        for sentence in knowledge_update:
+            if sentence not in self.knowledge:
+                self.knowledge.append(sentence)
+        
+                        
+        mark_cells_as_safe_or_mines()
+
+        # Debuggin prints        
         print("known_mines so far: ", self.mines)
         print("known_safes left to explore: ", len(self.safes) - len(self.moves_made))
         print("moves made so far: ", len(self.moves_made))
-        
-        # Add any new sentences to the AI's knowledge base
-        knowledge_update = []
-        for sentence in self.knowledge:
-            for new_sentence in self.knowledge:
-                if sentence != new_sentence:
-                    if sentence.cells.issubset(new_sentence.cells):
-                        new_sentence.count -= sentence.count
-                        new_sentence.cells -= sentence.cells
-            if len(new_sentence.cells) > 0:
-                knowledge_update.append(new_sentence)
-        self.knowledge = knowledge_update
 
         print("add_knowledge(): ", cell, count)
         print("number of sentences: ", len(self.knowledge))
