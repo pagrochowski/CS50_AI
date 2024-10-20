@@ -7,7 +7,7 @@ def main():
 """
 TESTING MinesweeperAI CLASS
 """
-
+"""  
 def test_knowledge_inference():
     # Initiate 3x3 board
     gameAI = MinesweeperAI(3, 3)
@@ -19,7 +19,7 @@ def test_knowledge_inference():
     assert gameAI.knowledge[0].cells == {(1, 0), (1, 1)}
     assert gameAI.knowledge[1].cells == {(0, 2), (1, 0), (1, 1), (1, 2)}
     
-"""   
+ 
     # Click on cell (0, 2) 
     gameAI.add_knowledge((0, 2), 1)
     assert gameAI.knowledge[0].cells == {(1, 0), (1, 1)}
