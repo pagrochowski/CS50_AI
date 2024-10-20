@@ -175,21 +175,25 @@ class MinesweeperAI():
         Marks a cell as a mine, and updates all knowledge
         to mark that cell as a mine as well.
         """
-        self.mines.add(cell)
+        if cell not in self.mines:
+            print("Marking mine: ", cell)
+            self.mines.add(cell)
         for sentence in self.knowledge:
             sentence.mark_mine(cell)
-        print("mark_mine(): ", cell)
+        #print("mark_mine(): ", cell)
 
     def mark_safe(self, cell):
         """
         Marks a cell as safe, and updates all knowledge
         to mark that cell as safe as well.
         """
-        self.safes.add(cell)
+        if cell not in self.safes:
+            print("Marking safe: ", cell)
+            self.safes.add(cell)
         for sentence in self.knowledge:
             sentence.mark_safe(cell)
         
-        print("mark_safe(): ", cell)
+        #print("mark_safe(): ", cell)
 
     def add_knowledge(self, cell, count):
         """
@@ -207,80 +211,113 @@ class MinesweeperAI():
                if they can be inferred from existing knowledge
         """
 
-        def add_neighbors_as_sentence():
+        def add_neighbors_as_sentence(cell, count):
             # Add neighboring cells to knowledge as sentence
             neighbors = set()
+            count = count
             for i in range(cell[0] - 1, cell[0] + 2):
                 for j in range(cell[1] - 1, cell[1] + 2):
                     if 0 <= i < self.height and 0 <= j < self.width:
                         if (i, j) != cell:
                             if (i, j) not in self.moves_made and (i, j) not in self.mines and (i, j) not in self.safes:
                                 neighbors.add((i, j))
+                            if (i, j) in self.mines:
+                                count -= 1
 
             new_sentence = Sentence(neighbors, count)
-            if new_sentence not in self.knowledge:
+            if new_sentence not in self.knowledge and new_sentence.cells != set():
+                print("Neighbor sentence added: ", new_sentence)
                 self.knowledge.append(new_sentence)
+            else:
+                print("Neighbor sentence not added: ", new_sentence)
 
-        def mark_cells_as_safe_or_mines():    
+        def mark_cells_as_safe_or_mines():
+            new_information = False    
             knowledge_copy = copy.deepcopy(self.knowledge)
             for sentence in knowledge_copy:
-                # # Mark safes
-                if sentence.count == 0:
+                # Mark safes first
+                if sentence.count == 0 and len(sentence.cells) > 0:
                     safes = sentence.known_safes()
-                    print("adding known safes: ", safes)
-                    print("Based on sentence: ", sentence)
                     for cell in safes:
                         self.mark_safe(cell)
-                # Mark mines        
+                    new_information = True
+                    
+                # Mark mines
                 elif len(sentence.cells) == sentence.count and sentence.count > 0:
                     mines = sentence.known_mines()
-                    print("adding known mines: ", mines)
-                    print("Based on sentence: ", sentence)
+                    #print("Adding known mines: ", mines)
+                    #print("Based on sentence: ", sentence)
                     for cell in mines:
                         self.mark_mine(cell)
-                    
-        """ 
-        Cross-Check All Sentences: Before marking a cell as a mine or safe, check other sentences 
-        involving those cells to see if there's conflicting information. For instance, if multiple 
-        sentences point to different outcomes for a specific cell, the AI should delay inference 
-        until more information is available.
+                    new_information = True
 
-        Refine the Subset Check: You can enhance the subset inference logic by adding checks that 
-        ensure inferred knowledge (e.g., (0, 0) being a mine) fits with all other existing sentences 
-        in the knowledge base. This prevents conflicting deductions.
-        """
+            return new_information
+
 
         def infer_new_sentences():
             new_information = False
             knowledge_copy = copy.deepcopy(self.knowledge)
+
+            # Iterate over pairs of sentences in the knowledge base copy
             for sentence in knowledge_copy:
                 for other_sentence in knowledge_copy:
                     if sentence != other_sentence:
-                        # Only infer if sentence has fewer cells and count <= other_sentence count
-                        if sentence.cells.issubset(other_sentence.cells) and sentence.count <= other_sentence.count:
+                        # Check if the sentence is a subset of the other sentence
+                        if sentence.cells.issubset(other_sentence.cells) and sentence.count <= other_sentence.count and len(sentence.cells) > 0 and len(other_sentence.cells) > 0:
+                            print("********************")
+                            print("Sentence: ", sentence, " is subset of: ", other_sentence)
+                            print("Inferred cells: ", other_sentence.cells - sentence.cells)
+                            print("Inferred count: ", other_sentence.count - sentence.count)
                             inferred_cells = other_sentence.cells - sentence.cells
                             inferred_count = other_sentence.count - sentence.count
-                            # Only infer a new sentence if it is valid
-                            # No empty sets
-                            if len(inferred_cells) > 0:
-                                # Non-negative counts
+
+                            # Remove known mines and known safes
+                            for cell in inferred_cells:
+                                if cell in self.mines:
+                                    inferred_cells.remove(cell)
+                                    inferred_count -= 1
+                                if cell in self.safes:
+                                    inferred_cells.remove(cell)
+
+                            # Infer a new sentence only if valid, excluding negative counts and empty sets
+                            if inferred_cells != set():
                                 if inferred_count >= 0:
+                                    #print("Sentence passing condition for non negative and not empty set")
                                     # Count is less than or equal to number of cells
                                     if inferred_count <= len(inferred_cells):
+                                        #print("New sentence formed: ", inferred_cells, inferred_count)
                                         new_sentence = Sentence(inferred_cells, inferred_count)
+
+                                        # Avoid duplicates
                                         if new_sentence not in self.knowledge:
                                             self.knowledge.append(new_sentence)
                                             new_information = True
-                                            print("adding new sentence: ", new_sentence)
+                                            print("Adding new sentence: ", new_sentence)
+                                        else:
+                                            print("Duplicate sentence: ", new_sentence)
+                                    else:
+                                        print("Sentence not passing condition for count less than or equal to cells number")
+                                else:
+                                    print("Sentence not passing condition for negative count")
+                            else:
+                                print("Sentence not passing condition for empty set")        
+
             return new_information
                                 
 
         def clear_knowledge():
-            #print("clear_knowledge()")
+            # Remove empty sentences 
+            self.knowledge = [sentence for sentence in self.knowledge if len(sentence.cells) > 0]
+
+            # Use a set to track unique sentences
+            unique_sentences = []
+            
             for sentence in self.knowledge:
-                if len(sentence.cells) == 0:
-                    #print("removing empty sentence")
-                    self.knowledge.remove(sentence)
+                if sentence not in unique_sentences:
+                    unique_sentences.append(sentence)
+
+            # Update the knowledge base to only contain unique sentences
+            self.knowledge = unique_sentences
 
 
         # ------------------------------MAIN STEPS----------------------------------------------
@@ -291,7 +328,7 @@ class MinesweeperAI():
         self.mark_safe(cell)
         
         # 3) add a new sentence to the AI's knowledge base
-        add_neighbors_as_sentence()
+        add_neighbors_as_sentence(cell, count)
 
         # 4) mark any additional cells as safe or as mines
         #    if it can be concluded based on the AI's knowledge base
@@ -302,16 +339,18 @@ class MinesweeperAI():
         new_information = True
         while new_information:
             new_information = False
+            infer_new_sentences()
             mark_cells_as_safe_or_mines()
             clear_knowledge()
-            if infer_new_sentences():
+            if infer_new_sentences() or mark_cells_as_safe_or_mines():
                 new_information = True
 
 
-        # Clear knowledge of empty sentences
+        # Clear knowledge before wrapping up
         clear_knowledge()
 
-        # Debugging prints        
+        # Debugging prints  
+        print("SUMMARY:")      
         print("known_mines so far (", len(self.mines), "): ", self.mines)
         print("known_safes so far (", len(self.safes), "): ", self.safes)
         print("Safe moves left: ", len(self.safes) - len(self.moves_made))
