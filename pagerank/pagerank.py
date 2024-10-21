@@ -4,13 +4,14 @@ import re
 import sys
 
 DAMPING = 0.85
+#SAMPLES = 10000
 SAMPLES = 10000
 
 
 def main():
-    #if len(sys.argv) != 2:
-        #sys.exit("Usage: python pagerank.py corpus")
-    #corpus = crawl(sys.argv[1])
+    if len(sys.argv) != 2:
+        sys.exit("Usage: python pagerank.py corpus")
+    corpus = crawl(sys.argv[1])
     corpus = crawl("corpus0")
     ranks = sample_pagerank(corpus, DAMPING, SAMPLES)
     print(f"PageRank Results from Sampling (n = {SAMPLES})")
@@ -58,34 +59,36 @@ def transition_model(corpus, page, damping_factor):
     linked to by `page`. With probability `1 - damping_factor`, choose
     a link at random chosen from all pages in the corpus.
     """
-    #corpus = {"1.html": {"2.html", "3.html"}, "2.html": {"3.html"}}
+    
     print("---------------------RESULTS for", page, "---------------------------")
-    # Random choice probability per page
-    random_prob = (1 - damping_factor) / len(corpus)
-    print("Total corpus length (how many pages in corpus): ", len(corpus))
-    print("Random probability per page: ", random_prob)
+    
+    print("Total pages in corpus: ", len(corpus))
+    #print("Random probability per page: ", random_prob)
+    print("Links in current page (", len(corpus[page]), "): ", corpus[page])
 
+   
     # Probability distribution over which page to visit next
     prob_dist = {}
-
-    print("Links in current page: ", corpus[page])
-    print("Links count in current page: ", len(corpus[page]))
-
-    # Add the current page to the probability distribution
-    
 
     # For pages with no links, distribution is equal for all pages
     if len(corpus[page]) == 0:
         for page in corpus:
             prob_dist[page] = 1 / len(corpus)      
     else:
+        # Random choice probability per page
+        random_prob = (1 - damping_factor) / len(corpus)
+        
         prob_dist[page] = random_prob
         # Loop over all pages in the corpus
         for link in corpus[page]:
 
             # Count the number of links from the current page
             page_link_count = len(corpus[page])
-            link_prob = 1 / page_link_count - random_prob / page_link_count
+
+            # Calculate the link probability
+            # Old version
+            #link_prob = (1 / page_link_count) - (random_prob / page_link_count)
+            link_prob = random_prob + damping_factor / page_link_count
             print("Link probability for page", link, ": ", link_prob)
 
             # Add the next page to the probability distribution
@@ -103,6 +106,7 @@ def transition_model(corpus, page, damping_factor):
     else:
         print("CORRECT: sum of probabilities equals 1")
 
+    print("---------------------------------------------------------")
     return prob_dist
 
 
@@ -115,7 +119,63 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    #corpus = {"1.html": {"2.html", "3.html"}, "2.html": {"3.html"}}
+
+    # Initialise empty dictionary
+    pagerank = {}
+
+    print("testing corpus: ", corpus)
+
+    # Initialise pagerank values to 1 over n
+    for page in corpus:
+        pagerank[page] = 0
+
+    # Test initialisation
+    #print(pagerank)
+    #for page in pagerank:
+        #print(page, ": ", pagerank[page])
+
+    # Randomly select a page, but start with fixed page
+    page = random.choice(list(corpus.keys()))
+    #page = '3.html'
+
+    print("Starting page: ", page)
+
+    #transition_model(corpus, page, damping_factor)
+
+    # Sample n pages
+    for _ in range(n):
+        # Launch transition model
+        next_sample_prob = transition_model(corpus, page, damping_factor)
+        # Add 1 to the current page rank value
+        pagerank[page] += 1
+
+        # Choose next page
+        print("Next sample probability: ", next_sample_prob)
+        page = random.choices(list(next_sample_prob.keys()), weights=list(next_sample_prob.values()))[0]
+
+        print("Randomly chosen next page: ", page)
+    
+    # Divide pagerank values by n
+    for page in pagerank:
+        pagerank[page] = pagerank[page] / n
+
+    # Adjusting last page for floating point imprecision
+    pagerank[page] += 1 - sum(pagerank.values())
+    
+    # Test if probability distribution sums up to 1
+    if sum(pagerank.values()) != 1:
+        print("WRONG: sum of probabilities does not equal 1, in fact it is: ", sum(pagerank.values()))
+    else:
+        print("CORRECT: sum of probabilities equals 1")
+
+    # Test final values
+    print("Final pagerank values: ")
+    #print(pagerank)
+    for page in pagerank:
+        print(page, ": ", pagerank[page])
+
+    return pagerank
 
 
 
