@@ -58,46 +58,52 @@ def transition_model(corpus, page, damping_factor):
     linked to by `page`. With probability `1 - damping_factor`, choose
     a link at random chosen from all pages in the corpus.
     """
-    #corpus = {"1.html": {"2.html", "3.html", "2.html"}}
-    #page = "1.html"
-    #damping_factor = 0.85
-
+    #corpus = {"1.html": {"2.html", "3.html"}, "2.html": {"3.html"}}
+    print("---------------------RESULTS for", page, "---------------------------")
     # Random choice probability per page
-    random_prob = round((1 - damping_factor) / len(corpus), 4)
-    print("Corpus length: ", len(corpus))
+    random_prob = (1 - damping_factor) / len(corpus)
+    print("Total corpus length (how many pages in corpus): ", len(corpus))
     print("Random probability per page: ", random_prob)
 
     # Probability distribution over which page to visit next
     prob_dist = {}
 
-    print("Corpus[page]: ", corpus[page])
-    print("Length of corpus[page]: ", len(corpus[page]))
+    print("Links in current page: ", corpus[page])
+    print("Links count in current page: ", len(corpus[page]))
 
     # Add the current page to the probability distribution
-    prob_dist[page] = random_prob
-    print("Probability distribution for current page: ", prob_dist)
-
-    # Loop over all pages in the corpus
-    for link in corpus[page]:
-
-        # Count the number of links from the current page
-        page_link_count = len(corpus[page])
-        link_prob = 1 / page_link_count - random_prob / page_link_count
-        print("Link probability for page", link, ": ", link_prob)
-
-        # Add the next page to the probability distribution
-        prob_dist[link] = link_prob
     
+
+    # For pages with no links, distribution is equal for all pages
+    if len(corpus[page]) == 0:
+        for page in corpus:
+            prob_dist[page] = 1 / len(corpus)      
+    else:
+        prob_dist[page] = random_prob
+        # Loop over all pages in the corpus
+        for link in corpus[page]:
+
+            # Count the number of links from the current page
+            page_link_count = len(corpus[page])
+            link_prob = 1 / page_link_count - random_prob / page_link_count
+            print("Link probability for page", link, ": ", link_prob)
+
+            # Add the next page to the probability distribution
+            prob_dist[link] = link_prob
+    
+    # Adjusting current page for floating point imprecision
+    prob_dist[page] += 1 - sum(prob_dist.values())
+
     # Print final values for probability distribution
-    print("Final probability distribution: ", prob_dist)
+    print("Final probability distribution (adjusted): ", prob_dist)
+
+    # Test if probability distribution sums up to 1
+    if sum(prob_dist.values()) != 1:
+        print("WRONG: sum of probabilities does not equal 1, in fact it is: ", sum(prob_dist.values()))
+    else:
+        print("CORRECT: sum of probabilities equals 1")
 
     return prob_dist
-
-
-    
-    
-
-    
 
 
 def sample_pagerank(corpus, damping_factor, n):
