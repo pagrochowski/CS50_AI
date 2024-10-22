@@ -66,36 +66,41 @@ def transition_model(corpus, page, damping_factor):
     #print("Random probability per page: ", random_prob)
     print("Links in current page (", len(corpus[page]), "): ", corpus[page])
 
-   
+    # Initialise starting page (avoding confusion)
+    start_page = page
+
     # Probability distribution over which page to visit next
     prob_dist = {}
 
-    # For pages with no links, distribution is equal for all pages
-    if len(corpus[page]) == 0:
-        for page in corpus:
-            prob_dist[page] = 1 / len(corpus)      
-    else:
-        # Random choice probability per page
-        random_prob = (1 - damping_factor) / len(corpus)
-        
-        prob_dist[page] = random_prob
-        # Loop over all pages in the corpus
-        for link in corpus[page]:
+    # Random choice probability per page
+    random_prob = (1 - damping_factor) / len(corpus)
 
-            # Count the number of links from the current page
-            page_link_count = len(corpus[page])
+    # Random choice probability per page assigned to each page in corpus
+    for page in corpus:
+        prob_dist[page] = random_prob
+
+    # For pages with no links, distribution is equal for all pages
+    if len(corpus[start_page]) == 0:
+        for page in corpus:
+            prob_dist[page] += damping_factor / len(corpus) 
+
+    # For pages with links     
+    else:       
+        # Loop over all links on the page
+        for link in corpus[start_page]:
+
+            # Count the number of links from the starting page
+            page_link_count = len(corpus[start_page])
 
             # Calculate the link probability
-            # Old version
-            #link_prob = (1 / page_link_count) - (random_prob / page_link_count)
-            link_prob = random_prob + damping_factor / page_link_count
+            link_prob = damping_factor / page_link_count
             print("Link probability for page", link, ": ", link_prob)
 
-            # Add the next page to the probability distribution
-            prob_dist[link] = link_prob
+            # Add the calculated link probability to the probability distribution
+            prob_dist[link] += link_prob
     
-    # Adjusting current page for floating point imprecision
-    prob_dist[page] += 1 - sum(prob_dist.values())
+    # Adjusting starting page for floating point imprecision
+    prob_dist[start_page] += 1 - sum(prob_dist.values())
 
     # Print final values for probability distribution
     print("Final probability distribution (adjusted): ", prob_dist)
@@ -130,18 +135,10 @@ def sample_pagerank(corpus, damping_factor, n):
     for page in corpus:
         pagerank[page] = 0
 
-    # Test initialisation
-    #print(pagerank)
-    #for page in pagerank:
-        #print(page, ": ", pagerank[page])
-
-    # Randomly select a page, but start with fixed page
+    # Randomly select a page
     page = random.choice(list(corpus.keys()))
-    #page = '3.html'
 
     print("Starting page: ", page)
-
-    #transition_model(corpus, page, damping_factor)
 
     # Sample n pages
     for _ in range(n):
