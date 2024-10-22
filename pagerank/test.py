@@ -5,12 +5,23 @@ def main():
     #corpus = {"1.html": {"2.html", "3.html"}, "2.html": {"3.html"}, "3.html": {"2.html"}}
     page = "4.html"
     damping_factor = 0.85
-    n = 1
+    n = 10000
     #transition_model(corpus, page, damping_factor)
     #sample_pagerank(corpus, damping_factor, n)
     iterate_pagerank(corpus, damping_factor)
 
-
+def test_iterate_pagerank():
+    corpus = {"1.html": {"2.html"}, "2.html": {"1.html", "3.html", }, "3.html": {"1.html", "2.html"}, "4.html": {}}
+    damping_factor = 0.85
+    
+    """
+    Final pagerank values: 
+    1.html :  0.3134
+    2.html :  0.4138
+    3.html :  0.2237
+    4.html :  0.0491
+    """
+    #assert iterate_pagerank(corpus, damping_factor) == {'1.html': 0.037500000000000006, '2.html': 0.8875, '3.html': 0.037500000000000006, '4.html': 0.037500000000000006}
 
 
 def test_transition_model():

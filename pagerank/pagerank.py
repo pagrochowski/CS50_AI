@@ -4,7 +4,6 @@ import re
 import sys
 
 DAMPING = 0.85
-#SAMPLES = 10000
 SAMPLES = 10000
 
 
@@ -185,73 +184,95 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    #corpus = {"1.html": {"2.html"}, "2.html": {"1.html", "3.html", }, "3.html": {"1.html", "2.html", "4.html"}, "4.html": {}}
+    #corpus = {"1.html": {"2.html"}, "2.html": {"1.html", "3.html", }, "3.html": {"1.html", "2.html"}, "4.html": {}}
 
     # Initialise probability distribution
-    prob_dist = {}
+    pagerank = {}
 
     # Initialise the convergence threshold
     threshold = 0.001
 
     # Initialise pagerank values to 1 / (total number of pages in the corpus)
     for page in corpus:
-        prob_dist[page] = 1 / len(corpus)
+        pagerank[page] = 1 / len(corpus)
 
     # Test initial values
-    print("Initial probability distribution: ", prob_dist)
+    print("Initial probability distribution: ", pagerank)
 
     # Loop start here
-    p = "4.html"
-    print("---------------------------Calculating for page", p, "---------------------------")
+    convergence_ongoing = True
+    hard_stop = 0
 
-    # Gather links that point to the page p
-    links_to_p = []
+    while convergence_ongoing == True:
+        for p in corpus:
+            print("---------------------------Calculating for page", p, "---------------------------")
 
-    for page in corpus:
-        if p in corpus[page] and len(corpus[page]) > 0:
-            links_to_p.append(page)
+            # Gather links that point to the page p
+            links_to_p = []
 
-        # If page has no links, it links to all pages, including itself
-        elif len(corpus[page]) == 0:
-            print("Page", page, "has no links")
-            links_to_p.append(page)
+            for page in corpus:
+                if p in corpus[page] and len(corpus[page]) > 0:
+                    links_to_p.append(page)
 
-    # Print out all the links
-    print("Links that point to the page", p, ": ")
-    print(links_to_p)
-    
-    NumLinks = {}
-    for NumLink in links_to_p:
-        if len(corpus[NumLink]) > 0:
-            NumLinks[NumLink] = len(corpus[NumLink])
-        if len(corpus[NumLink]) == 0:
-            NumLinks[NumLink] = len(corpus)
+                # If page has no links, it links to all pages, including itself
+                elif len(corpus[page]) == 0:
+                    print("Page", page, "has no links")
+                    links_to_p.append(page)
 
-    # Check NumLinks
-    print("NumLinks: ", NumLinks)
+            # Print out all the links
+            print("Links that point to the page", p, ": ")
+            print(links_to_p)
+            
+            # Create NumLinks for each page
+            NumLinks = {}
 
-    # Initialise the pagerank value before summation
-    prob_dist[p] = ((1 - damping_factor) / len(corpus))
-    print("Probability distribution before iteration: ", prob_dist)
-    print("(1 - d / N) : ", (1 - damping_factor) / len(corpus))
+            for NumLink in links_to_p:
+                if len(corpus[NumLink]) > 0:
+                    NumLinks[NumLink] = len(corpus[NumLink])
+                if len(corpus[NumLink]) == 0:
+                    NumLinks[NumLink] = len(corpus)
 
-    for NumLink in NumLinks:
-        summation = damping_factor * (prob_dist[NumLink] / NumLinks[NumLink])
-        print("Summation: ", summation)
-        prob_dist[p] += summation
- 
+            # Check NumLinks
+            print("NumLinks: ", NumLinks)
+
+            # Initialise the pagerank value before summation
+            pagerank[p] = ((1 - damping_factor) / len(corpus))
+            print("Probability distribution before iteration: ", pagerank)
+            print("(1 - d / N) : ", (1 - damping_factor) / len(corpus))
+
+            for NumLink in NumLinks:
+                summation = damping_factor * (pagerank[NumLink] / NumLinks[NumLink])
+                if summation < threshold:
+                    convergence_ongoing = False
+                print("Summation: ", damping_factor, "*", pagerank[NumLink], "/", NumLinks[NumLink], "=", summation)
+                pagerank[p] += summation
+
+            #print("Probability distribution after iteration", hard_stop, ": ", pagerank)
+
+        hard_stop += 1
+        if hard_stop > SAMPLES:
+            convergence_ongoing = False
+
+    # Adjusting for floating point imprecision by distributing equally across all keys
+    difference = 1 - sum(pagerank.values())
+
+    # Spread the difference equally across all keys
+    adjustment = difference / len(pagerank)
+
+    for key in pagerank:
+        pagerank[key] += adjustment
 
     # Final output
-    print("Probability distribution after iteration: ", prob_dist)
+    print("Final Output: ", pagerank)
 
     # Check if the sum of all pagerank values is close to 1
     pagerank_sum = 0
     for page in corpus:
-        pagerank_sum += prob_dist[page]
+        pagerank_sum += pagerank[page]
 
     print("Sum of all pagerank values: ", pagerank_sum)
 
-    return prob_dist
+    return pagerank
 
 
 if __name__ == "__main__":
