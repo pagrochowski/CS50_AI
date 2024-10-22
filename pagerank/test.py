@@ -1,18 +1,14 @@
-from pagerank import transition_model, sample_pagerank
+from pagerank import transition_model, sample_pagerank, iterate_pagerank
 
 def main():
-    #corpus = crawl("corpus0")
-    #print(corpus)
-    #keys = list(corpus.keys())
-    #page1 = keys[0]
-    #print(page1)
-    corpus = {"1.html": {"2.html"}, "2.html": {"1.html", "3.html", }, "3.html": {"1.html", "2.html", "4.html"}, "4.html": {}}
+    corpus = {"1.html": {"2.html"}, "2.html": {"1.html", "3.html", }, "3.html": {"1.html", "2.html"}, "4.html": {}}
     #corpus = {"1.html": {"2.html", "3.html"}, "2.html": {"3.html"}, "3.html": {"2.html"}}
     page = "4.html"
     damping_factor = 0.85
     n = 1
-    transition_model(corpus, page, damping_factor)
+    #transition_model(corpus, page, damping_factor)
     #sample_pagerank(corpus, damping_factor, n)
+    iterate_pagerank(corpus, damping_factor)
 
 
 
