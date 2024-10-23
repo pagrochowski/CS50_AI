@@ -226,8 +226,18 @@ def joint_probability(people, one_gene, two_genes, have_trait):
             prob_no_trait_none_of_the_genes = prob_no_trait_none_of_the_genes * PROBS["trait"][0][False]
             print("Probability that", person, "(NONE of the genes) does NOT have the trait: ", PROBS["trait"][0][False])
 
+    lily = prob_no_gene * prob_no_trait_none_of_the_genes
+    print("Lily: ", lily)
 
-    joint = joint * prob_has_trait_one_gene * prob_has_trait_two_genes * prob_has_trait_none_of_the_genes * prob_no_trait_one_gene * prob_no_trait_two_genes * prob_no_trait_none_of_the_genes
+    james = prob_two_genes * prob_has_trait_two_genes
+    print("James: ", james)
+
+    harry = prob_one_gene * prob_has_trait_one_gene
+    print("Harry: ", harry)
+
+    joint = lily * james * harry
+
+    #joint = joint * prob_has_trait_one_gene * prob_has_trait_two_genes * prob_has_trait_none_of_the_genes * prob_no_trait_one_gene * prob_no_trait_two_genes * prob_no_trait_none_of_the_genes
 
     return joint
 

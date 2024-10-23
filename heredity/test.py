@@ -61,7 +61,14 @@ def main():
     two_genes = {"James"}
     trait = {"Harry", "James"}
 
-    p = joint_probability(people, one_gene, two_genes, trait)
+    people = {
+    'Harry': {'name': 'Harry', 'mother': 'Lily', 'father': 'James', 'trait': None},
+    'James': {'name': 'James', 'mother': None, 'father': None, 'trait': True},
+    'Lily': {'name': 'Lily', 'mother': None, 'father': None, 'trait': False}
+    }
+
+    #p = joint_probability(people, one_gene, two_genes, trait)
+    p = joint_probability(people, {"Harry"}, {"James"}, {"James"})
     print("Joint probability: ", p)
 
 if __name__ == "__main__":
