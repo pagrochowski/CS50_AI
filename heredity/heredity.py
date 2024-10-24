@@ -90,7 +90,6 @@ def main():
 
                 # Update probabilities with new joint probability
                 p = joint_probability(people, one_gene, two_genes, have_trait)
-                print("Joint probability result: ")
                 print(p)
                 #update(probabilities, one_gene, two_genes, have_trait, p)
 
@@ -153,9 +152,6 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone in set `have_trait` has the trait, and
         * everyone not in set` have_trait` does not have the trait.
 
-    Note FROM SELF: 
-    Consider example:
-    Finally, we consider Harry. What’s the probability that Harry has 1 copy of the gene? There are two ways this can happen. Either he gets the gene from his mother and not his father, or he gets the gene from his father and not his mother. His mother Lily has 0 copies of the gene, so Harry will get the gene from his mother with probability 0.01 (this is PROBS["mutation"]), since the only way to get the gene from his mother is if it mutated; conversely, Harry will not get the gene from his mother with probability 0.99. His father James has 2 copies of the gene, so Harry will get the gene from his father with probability 0.99 (this is 1 - PROBS["mutation"]), but will get the gene from his mother with probability 0.01 (the chance of a mutation). Both of these cases can be added together to get 0.99 * 0.99 + 0.01 * 0.01 = 0.9802, the probability that Harry has 1 copy of the gene.
     
     """
 
@@ -221,12 +217,12 @@ def joint_probability(people, one_gene, two_genes, have_trait):
             if person in two_genes:
                 # Both parents have two genes 0.9801
                 if people[person]["mother"] in two_genes and people[person]["father"] in two_genes:
-                    joint[person] = 0.99 * 0.99
+                    joint[person] = (1 - PROBS["mutation"]) * (1 - PROBS["mutation"])
                     print(person, " was here 7")
                 # One parent has one gene, the other has two genes 0.495
                 elif ((people[person]["mother"] in one_gene and people[person]["father"] in two_genes) or 
                       (people[person]["mother"] in two_genes and people[person]["father"] in one_gene)):
-                    joint[person] = 0.5 * 0.99
+                    joint[person] = 0.5 * (1 - PROBS["mutation"])
                     print(person, " was here 8")
                 # Both parents have one gene
                 elif people[person]["mother"] in one_gene and people[person]["father"] in one_gene:
@@ -237,19 +233,19 @@ def joint_probability(people, one_gene, two_genes, have_trait):
                         people[person]["father"] in two_genes) or \
                         (people[person]["mother"] in two_genes and \
                         people[person]["father"] not in one_gene and people[person]["father"] not in two_genes):
-                    joint[person] = 0.01 * 0.99
+                    joint[person] = PROBS["mutation"] * (1 - PROBS["mutation"])
                     print(person, " was here 10")
                 # One parent has no genes, the other has one gene
                 elif ((people[person]["mother"] not in one_gene and people[person]["mother"] not in two_genes) and \
                         people[person]["father"] in one_gene) or \
                         (people[person]["mother"] in one_gene and \
                         people[person]["father"] not in one_gene and people[person]["father"] not in two_genes):
-                    joint[person] = 0.01 * 0.5
+                    joint[person] = PROBS["mutation"] * 0.5
                     print(person, " was here 11")
                 # Both parents have no genes 0.0001
                 elif people[person]["mother"] not in one_gene and people[person]["mother"] not in two_genes and \
                         people[person]["father"] not in one_gene and people[person]["father"] not in two_genes:
-                    joint[person] = 0.01 * 0.01
+                    joint[person] = PROBS["mutation"] * PROBS["mutation"]
                     print(person, " was here 12")
 
             # One gene
@@ -258,12 +254,12 @@ def joint_probability(people, one_gene, two_genes, have_trait):
             elif person in one_gene:
                 # Both parents have two genes 0.0198
                 if people[person]["mother"] in two_genes and people[person]["father"] in two_genes:
-                    joint[person] = 0.99 * 0.01 + 0.01 * 0.99
+                    joint[person] = (1 - PROBS["mutation"]) * PROBS["mutation"] + PROBS["mutation"] * (1 - PROBS["mutation"])
                     print(person, " was here 13")
                 # One parent has one gene, the other has two genes 0.5
                 elif ((people[person]["mother"] in one_gene and people[person]["father"] in two_genes) or 
                         (people[person]["mother"] in two_genes and people[person]["father"] in one_gene)):
-                    joint[person] = 0.5 * 0.01 + 0.5 * 0.99
+                    joint[person] = 0.5 * PROBS["mutation"] + 0.5 * (1 - PROBS["mutation"])
                     print(person, " was here 14")
                 # Both parents have one gene 0.5
                 elif people[person]["mother"] in one_gene and people[person]["father"] in one_gene:
@@ -274,19 +270,19 @@ def joint_probability(people, one_gene, two_genes, have_trait):
                         people[person]["father"] in two_genes) or \
                         (people[person]["mother"] in two_genes and \
                         people[person]["father"] not in one_gene and people[person]["father"] not in two_genes):
-                    joint[person] = 0.99 * 0.99 + 0.01 * 0.01
+                    joint[person] = (1 - PROBS["mutation"]) * (1 - PROBS["mutation"]) + PROBS["mutation"] * PROBS["mutation"]
                     print(person, " was here 16")
                 # One parent has no genes, the other has one gene 0.5
                 elif ((people[person]["mother"] not in one_gene and people[person]["mother"] not in two_genes) and \
                         people[person]["father"] in one_gene) or \
                         (people[person]["mother"] in one_gene and \
                         people[person]["father"] not in one_gene and people[person]["father"] not in two_genes):
-                    joint[person] = 0.01 * 0.5 + 0.99 * 0.5
+                    joint[person] = PROBS["mutation"] * 0.5 + (1 - PROBS["mutation"]) * 0.5
                     print(person, " was here 17")
                 # Both parents have no genes 0.0198
                 elif people[person]["mother"] not in one_gene and people[person]["mother"] not in two_genes and \
                         people[person]["father"] not in one_gene and people[person]["father"] not in two_genes:
-                    joint[person] = 0.99 * 0.01 + 0.01 * 0.99
+                    joint[person] = (1 - PROBS["mutation"]) * PROBS["mutation"] + PROBS["mutation"] * (1 - PROBS["mutation"])
                     print(person, " was here 18")
 
                     
@@ -295,12 +291,12 @@ def joint_probability(people, one_gene, two_genes, have_trait):
             if person not in one_gene and person not in two_genes:
                 # Both parents have two genes 0.0001
                 if people[person]["mother"] in two_genes and people[person]["father"] in two_genes:
-                    joint[person] = 0.01 * 0.01
+                    joint[person] = PROBS["mutation"] * PROBS["mutation"]
                     print(person, " was here 19")
                 # One parent has one gene, the other has two genes 0.005
                 elif ((people[person]["mother"] in one_gene and people[person]["father"] in two_genes) or 
                      (people[person]["mother"] in two_genes and people[person]["father"] in one_gene)):
-                    joint[person] = 0.5 * 0.01
+                    joint[person] = 0.5 * PROBS["mutation"]
                     print(person, " was here 20")
                 # Both parents have one gene 0.25
                 elif people[person]["mother"] in one_gene and people[person]["father"] in one_gene:
@@ -311,32 +307,43 @@ def joint_probability(people, one_gene, two_genes, have_trait):
                         people[person]["father"] in two_genes) or \
                         (people[person]["mother"] in two_genes and \
                         people[person]["father"] not in one_gene and people[person]["father"] not in two_genes):
-                    joint[person] = 0.99 * 0.01
+                    joint[person] = (1 - PROBS["mutation"]) * PROBS["mutation"]
                     print(person, " was here 22")
                 # One parent has no genes, the other has one gene 0.005
                 elif ((people[person]["mother"] not in one_gene and people[person]["mother"] not in two_genes) and \
                         people[person]["father"] in one_gene) or \
                         (people[person]["mother"] in one_gene and \
                         people[person]["father"] not in one_gene and people[person]["father"] not in two_genes):
-                    joint[person] = 0.01 * 0.5
+                    joint[person] = PROBS["mutation"] * 0.5
                     print(person, " was here 23")
                 # Both parents have no genes 0.9801
                 elif people[person]["mother"] not in one_gene and people[person]["mother"] not in two_genes and \
                         people[person]["father"] not in one_gene and people[person]["father"] not in two_genes:
-                    joint[person] = 0.99 * 0.99
+                    joint[person] = (1 - PROBS["mutation"]) * (1 - PROBS["mutation"])
                     print(person, " was here 24")
 
             # Has trait based on parents
-            if people[person]["trait"] is None:
+            if person in have_trait:
                 if person in two_genes:
-                    joint[person] *= PROBS["trait"][2][False]
+                    joint[person] *= PROBS["trait"][2][True]
                     print(person, " was here 25")
                 elif person in one_gene:
-                    joint[person] *= PROBS["trait"][1][False]
+                    joint[person] *= PROBS["trait"][1][True]
                     print(person, " was here 26")
                 else:
-                    joint[person] *= PROBS["trait"][0][False]
+                    joint[person] *= PROBS["trait"][0][True]
                     print(person, " was here 27")
+            # Does not have trait based on parents
+            elif person not in have_trait:
+                if person in two_genes:
+                    joint[person] *= PROBS["trait"][2][False]
+                    print(person, " was here 28")
+                elif person in one_gene:
+                    joint[person] *= PROBS["trait"][1][False]
+                    print(person, " was here 29")
+                else:
+                    joint[person] *= PROBS["trait"][0][False]
+                    print(person, " was here 30")
     
     print("Joint probability result: ")    
     print(joint)

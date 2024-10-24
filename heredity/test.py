@@ -54,13 +54,6 @@ def main():
         for person in people
     }
 
-    #print("Probabilities loaded from CSV:")
-    #print(probabilities)
-
-    one_gene = {"Harry"}
-    two_genes = {"James"}
-    trait = {"Harry", "James"}
-
     people = {
     'Harry': {'name': 'Harry', 'mother': 'Lily', 'father': 'James', 'trait': None},
     'James': {'name': 'James', 'mother': None, 'father': None, 'trait': True},
@@ -70,6 +63,18 @@ def main():
     #p = joint_probability(people, one_gene, two_genes, trait)
     p = joint_probability(people, {"Harry"}, {"James"}, {"James"})
     print("Joint probability: ", p)
+
+def test_joint_probability():
+    people = {
+    'Harry': {'name': 'Harry', 'mother': 'Lily', 'father': 'James', 'trait': None},
+    'James': {'name': 'James', 'mother': None, 'father': None, 'trait': True},
+    'Lily': {'name': 'Lily', 'mother': None, 'father': None, 'trait': False}
+    }
+
+    # Harry one copy, James two copies, Lily no copy, James has trait
+    p = joint_probability(people, {"Harry"}, {"James"}, {"James"})
+
+    assert p == 0.0026643247488
 
 if __name__ == "__main__":
     main()
