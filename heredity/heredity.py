@@ -168,6 +168,13 @@ def joint_probability(people, one_gene, two_genes, have_trait):
     print(people)
 
     for person in people:
+        if person in one_gene:
+            print(person, ": one gene")
+        elif person in two_genes:
+            print(person, ": two genes")
+        else:
+            print(person, ": no genes")
+
         # No parents
         if people[person]["mother"] is None and people[person]["father"] is None:
             # Two genes
@@ -176,9 +183,11 @@ def joint_probability(people, one_gene, two_genes, have_trait):
                 # Has trait
                 if person in have_trait:
                     joint[person] *= PROBS["trait"][2][True]
+                    print(person, " was here 1")
                 # Does not have trait
                 else:
                     joint[person] *= PROBS["trait"][2][False]
+                    print(person, " was here 2")
 
             # One gene
             elif person in one_gene:
@@ -186,9 +195,11 @@ def joint_probability(people, one_gene, two_genes, have_trait):
                 # Has trait
                 if person in have_trait:
                     joint[person] *= PROBS["trait"][1][True]
+                    print(person, " was here 3")
                 # Does not have trait
                 else:
                     joint[person] *= PROBS["trait"][1][False]
+                    print(person, " was here 4")
             
             # No gene
             elif person not in (one_gene, two_genes):
@@ -196,91 +207,147 @@ def joint_probability(people, one_gene, two_genes, have_trait):
                 # Has trait
                 if person in have_trait:
                     joint[person] *= PROBS["trait"][0][True]
+                    print(person, " was here 5")
                 # Does not have trait
                 else:
                     joint[person] *= PROBS["trait"][0][False]
+                    print(person, " was here 6")
         
         # Parents
         elif people[person]["mother"] is not None and people[person]["father"] is not None:
 
             # Two genes
+            # Receive it from both father AND mother
             if person in two_genes:
-                # Both parents have two genes
+                # Both parents have two genes 0.9801
                 if people[person]["mother"] in two_genes and people[person]["father"] in two_genes:
-                    joint[person] = (1 - 0.01) * (1 - 0.01)
-                # One parent has one gene, the other has two genes
+                    joint[person] = 0.99 * 0.99
+                    print(person, " was here 7")
+                # One parent has one gene, the other has two genes 0.495
                 elif ((people[person]["mother"] in one_gene and people[person]["father"] in two_genes) or 
-                    (people[person]["mother"] in two_genes and people[person]["father"] in one_gene)):
-                    joint[person] = (0.5 - 0.01) * (1 - 0.01)
+                      (people[person]["mother"] in two_genes and people[person]["father"] in one_gene)):
+                    joint[person] = 0.5 * 0.99
+                    print(person, " was here 8")
                 # Both parents have one gene
                 elif people[person]["mother"] in one_gene and people[person]["father"] in one_gene:
-                    joint[person] = (0.5 - 0.01) * (0.5 - 0.01)
+                    joint[person] = 0.5 * 0.5
+                    print(person, " was here 9")
                 # One parent has no genes, the other has two genes
-                elif ((people[person]["mother"] not in (one_gene, two_genes) and people[person]["father"] in two_genes) or
-                    (people[person]["mother"] in two_genes and people[person]["father"] not in (one_gene, two_genes))):
-                    joint[person] = 0.01 * (1 - 0.01)
+                elif ((people[person]["mother"] not in one_gene and people[person]["mother"] not in two_genes) and \
+                        people[person]["father"] in two_genes) or \
+                        (people[person]["mother"] in two_genes and \
+                        people[person]["father"] not in one_gene and people[person]["father"] not in two_genes):
+                    joint[person] = 0.01 * 0.99
+                    print(person, " was here 10")
                 # One parent has no genes, the other has one gene
-                elif ((people[person]["mother"] not in (one_gene, two_genes) and people[person]["father"] in one_gene) or
-                    (people[person]["mother"] in one_gene and people[person]["father"] not in (one_gene, two_genes))):
-                    joint[person] = 0.01 * (0.5 - 0.01)
-                # Both parents have no genes
-                elif people[person]["mother"] not in (one_gene, two_genes) and people[person]["father"] not in (one_gene, two_genes):
+                elif ((people[person]["mother"] not in one_gene and people[person]["mother"] not in two_genes) and \
+                        people[person]["father"] in one_gene) or \
+                        (people[person]["mother"] in one_gene and \
+                        people[person]["father"] not in one_gene and people[person]["father"] not in two_genes):
+                    joint[person] = 0.01 * 0.5
+                    print(person, " was here 11")
+                # Both parents have no genes 0.0001
+                elif people[person]["mother"] not in one_gene and people[person]["mother"] not in two_genes and \
+                        people[person]["father"] not in one_gene and people[person]["father"] not in two_genes:
                     joint[person] = 0.01 * 0.01
+                    print(person, " was here 12")
 
             # One gene
+            # Case 1: received from mother and not father OR 
+            # Case 2: received from father and not mather
             elif person in one_gene:
-                # Both parents have two genes
+                # Both parents have two genes 0.0198
                 if people[person]["mother"] in two_genes and people[person]["father"] in two_genes:
-                    joint[person] = (1 - 0.01) * (1 - 0.01)
-                # One parent has one gene, the other has two genes
+                    joint[person] = 0.99 * 0.01 + 0.01 * 0.99
+                    print(person, " was here 13")
+                # One parent has one gene, the other has two genes 0.5
                 elif ((people[person]["mother"] in one_gene and people[person]["father"] in two_genes) or 
-                    (people[person]["mother"] in two_genes and people[person]["father"] in one_gene)):
-                    joint[person] = ((0.5 - 0.01) * (0.5 + 0.01)) + (1 - 0.01)
-                # Both parents have one gene
+                        (people[person]["mother"] in two_genes and people[person]["father"] in one_gene)):
+                    joint[person] = 0.5 * 0.01 + 0.5 * 0.99
+                    print(person, " was here 14")
+                # Both parents have one gene 0.5
                 elif people[person]["mother"] in one_gene and people[person]["father"] in one_gene:
-                    joint[person] = ((0.5 - 0.01) * (0.5 + 0.01)) + ((0.5 + 0.01) * (0.5 - 0.01))
-                # One parent has no genes, the other has two genes
-                elif ((people[person]["mother"] not in (one_gene, two_genes) and people[person]["father"] in two_genes) or
-                    (people[person]["mother"] in two_genes and people[person]["father"] not in (one_gene, two_genes))):
-                    joint[person] = 0.01 + (1 - 0.01)
-                # One parent has no genes, the other has one gene
-                elif ((people[person]["mother"] not in (one_gene, two_genes) and people[person]["father"] in one_gene) or
-                    (people[person]["mother"] in one_gene and people[person]["father"] not in (one_gene, two_genes))):
-                    joint[person] = 0.01 + ((0.5 - 0.01) * (0.5 + 0.01))
-                # Both parents have no genes
-                elif people[person]["mother"] not in (one_gene, two_genes) and people[person]["father"] not in (one_gene, two_genes):
-                    joint[person] = 0.01 + 0.01
+                    joint[person] = 0.5 * 0.5 + 0.5 * 0.5
+                    print(person, " was here 15")
+                # One parent has no genes, the other has two genes 0.9802
+                elif ((people[person]["mother"] not in one_gene and people[person]["mother"] not in two_genes) and \
+                        people[person]["father"] in two_genes) or \
+                        (people[person]["mother"] in two_genes and \
+                        people[person]["father"] not in one_gene and people[person]["father"] not in two_genes):
+                    joint[person] = 0.99 * 0.99 + 0.01 * 0.01
+                    print(person, " was here 16")
+                # One parent has no genes, the other has one gene 0.5
+                elif ((people[person]["mother"] not in one_gene and people[person]["mother"] not in two_genes) and \
+                        people[person]["father"] in one_gene) or \
+                        (people[person]["mother"] in one_gene and \
+                        people[person]["father"] not in one_gene and people[person]["father"] not in two_genes):
+                    joint[person] = 0.01 * 0.5 + 0.99 * 0.5
+                    print(person, " was here 17")
+                # Both parents have no genes 0.0198
+                elif people[person]["mother"] not in one_gene and people[person]["mother"] not in two_genes and \
+                        people[person]["father"] not in one_gene and people[person]["father"] not in two_genes:
+                    joint[person] = 0.99 * 0.01 + 0.01 * 0.99
+                    print(person, " was here 18")
+
                     
             # No gene
-            if person not in (one_gene, two_genes):
-                # Both parents have two genes
+            # Not received from mother AND not received from father
+            if person not in one_gene and person not in two_genes:
+                # Both parents have two genes 0.0001
                 if people[person]["mother"] in two_genes and people[person]["father"] in two_genes:
                     joint[person] = 0.01 * 0.01
-                # One parent has one gene, the other has two genes
+                    print(person, " was here 19")
+                # One parent has one gene, the other has two genes 0.005
                 elif ((people[person]["mother"] in one_gene and people[person]["father"] in two_genes) or 
-                    (people[person]["mother"] in two_genes and people[person]["father"] in one_gene)):
-                    joint[person] = (0.5 + 0.01) * 0.01
-                # Both parents have one gene
+                     (people[person]["mother"] in two_genes and people[person]["father"] in one_gene)):
+                    joint[person] = 0.5 * 0.01
+                    print(person, " was here 20")
+                # Both parents have one gene 0.25
                 elif people[person]["mother"] in one_gene and people[person]["father"] in one_gene:
-                    joint[person] = (0.5 + 0.01) * (0.5 + 0.01)
-                # One parent has no genes, the other has two genes
-                elif ((people[person]["mother"] not in (one_gene, two_genes) and people[person]["father"] in two_genes) or
-                    (people[person]["mother"] in two_genes and people[person]["father"] not in (one_gene, two_genes))):
-                    joint[person] = (1 - 0.01) * 0.01
-                # One parent has no genes, the other has one gene
-                elif ((people[person]["mother"] not in (one_gene, two_genes) and people[person]["father"] in one_gene) or
-                    (people[person]["mother"] in one_gene and people[person]["father"] not in (one_gene, two_genes))):
-                    joint[person] = (1 - 0.01) * (0.5 + 0.01)
-                # Both parents have no genes
-                elif people[person]["mother"] not in (one_gene, two_genes) and people[person]["father"] not in (one_gene, two_genes):
-                    joint[person] = (1 - 0.01) * (1 - 0.01)
+                    joint[person] = 0.5 * 0.5
+                    print(person, " was here 21")
+                # One parent has no genes, the other has two genes 0.0099
+                elif ((people[person]["mother"] not in one_gene and people[person]["mother"] not in two_genes) and \
+                        people[person]["father"] in two_genes) or \
+                        (people[person]["mother"] in two_genes and \
+                        people[person]["father"] not in one_gene and people[person]["father"] not in two_genes):
+                    joint[person] = 0.99 * 0.01
+                    print(person, " was here 22")
+                # One parent has no genes, the other has one gene 0.005
+                elif ((people[person]["mother"] not in one_gene and people[person]["mother"] not in two_genes) and \
+                        people[person]["father"] in one_gene) or \
+                        (people[person]["mother"] in one_gene and \
+                        people[person]["father"] not in one_gene and people[person]["father"] not in two_genes):
+                    joint[person] = 0.01 * 0.5
+                    print(person, " was here 23")
+                # Both parents have no genes 0.9801
+                elif people[person]["mother"] not in one_gene and people[person]["mother"] not in two_genes and \
+                        people[person]["father"] not in one_gene and people[person]["father"] not in two_genes:
+                    joint[person] = 0.99 * 0.99
+                    print(person, " was here 24")
 
+            # Has trait based on parents
+            if people[person]["trait"] is None:
+                if person in two_genes:
+                    joint[person] *= PROBS["trait"][2][False]
+                    print(person, " was here 25")
+                elif person in one_gene:
+                    joint[person] *= PROBS["trait"][1][False]
+                    print(person, " was here 26")
+                else:
+                    joint[person] *= PROBS["trait"][0][False]
+                    print(person, " was here 27")
     
     print("Joint probability result: ")    
     print(joint)
     
+    joint_result = 1
+    for person in people:
+        joint_result *= joint[person]
+
+    print("Final result:")
     
-    return joint
+    return joint_result
 
 
 def update(probabilities, one_gene, two_genes, have_trait, p):
