@@ -1,6 +1,7 @@
 import sys
 
 from crossword import *
+from crossword import Variable, Crossword
 
 
 class CrosswordCreator():
@@ -89,8 +90,8 @@ class CrosswordCreator():
         """
         Enforce node and arc consistency, and then solve the CSP.
         """
-        self.enforce_node_consistency()
-        self.ac3()
+        #self.enforce_node_consistency()
+        #self.ac3()
         return self.backtrack(dict())
 
     def enforce_node_consistency(self):
@@ -139,12 +140,25 @@ class CrosswordCreator():
 
     def order_domain_values(self, var, assignment):
         """
-        Return a list of values in the domain of `var`, in order by
+        Return a list of values in the domain of `var`, 
+        """
+        
+        values = []
+
+        for value in self.domains[var]:
+            values.append(value)
+
+        print(values)
+
+        #print("Self domains: ", self.domains)
+        
+        """
+        in order by
         the number of values they rule out for neighboring variables.
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
-        raise NotImplementedError
+        
 
     def select_unassigned_variable(self, assignment):
         """
@@ -154,7 +168,9 @@ class CrosswordCreator():
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
         """
-        raise NotImplementedError
+        for var in assignment:
+            if assignment[var] is None:
+                return var
 
     def backtrack(self, assignment):
         """

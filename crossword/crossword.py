@@ -31,6 +31,7 @@ class Variable():
         return f"({self.i}, {self.j}) {self.direction} : {self.length}"
 
     def __repr__(self):
+        # Provides a string representation of a variable
         direction = repr(self.direction)
         return f"Variable({self.i}, {self.j}, {direction}, {self.length})"
 
