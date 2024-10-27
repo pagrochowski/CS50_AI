@@ -18,12 +18,11 @@ def main():
 
     assignment = {}
 
-    assignment[Variable(0, 1, 'across', 3)] = "SIX"
-    assignment[Variable(0, 1, 'down', 5)] = "SEVEN"
-    assignment[Variable(4, 1, 'across', 4)] = "NINE"
-    assignment[Variable(1, 4, 'down', 4)] = "FIVE"
-
     creator.enforce_node_consistency()
+
+    creator.revise(Variable(0, 1, 'across', 3), Variable(0, 1, 'down', 5))
+
+
 
 def test_enforce_node_consistency():
 

@@ -90,8 +90,8 @@ class CrosswordCreator():
         """
         Enforce node and arc consistency, and then solve the CSP.
         """
-        #self.enforce_node_consistency()
-        #self.ac3()
+        self.enforce_node_consistency()
+        self.ac3()
         return self.backtrack(dict())
 
     def enforce_node_consistency(self):
@@ -106,13 +106,10 @@ class CrosswordCreator():
 
         # Loop through each variable in the copy
         for var in self.domains:
-            print("Considering variable: ", var)
             # Loop through each word in variable's domain
             for word in self.domains[var]:
-                print("Considering word (", var.length, "): ", word, "(", len(word), ")")
                 # If the length of the word does not match the length of the variable
                 if len(word) != var.length:
-                    print("Removing word: ", word)
                     # Add the word to the dictionary of words to be removed from the variable's domain
                     if var in words_to_remove:
                         words_to_remove[var].append(word)
@@ -134,8 +131,33 @@ class CrosswordCreator():
 
         Return True if a revision was made to the domain of `x`; return
         False if no revision was made.
+
+        Iterate through each value in self.domains[x].
+        Check if there is a corresponding value in self.domains[y] that satisfies the constraints.
+        If no such value exists, remove the value from self.domains[x] and set revised to True.
         """
-        raise NotImplementedError
+        print("Revising ", x, " and ", y)
+
+        print("Domains before revision: \n", self.domains[x], " and \n", self.domains[y])
+
+        # Assign value to x if there is a possible value for y
+        revised = False
+        for x_value in self.domains[x]:
+            for y_value in self.domains[y]:
+                if x_value != y_value:
+                    assignment = {}
+                    print("x_value: ", x_value, " and y_value: ", y_value)
+                    assignment[x] = x_value
+                    assignment[y] = y_value
+                    print("Assignment: ", assignment)
+                    if self.consistent(assignment):
+                        print("Consistent: ", x_value, " and ", y_value)
+                        
+                    else:
+                        print("Inconsistent: ", x_value, " and ", y_value)
+                        revised = True
+                    
+        
 
     def ac3(self, arcs=None):
         """
@@ -179,13 +201,16 @@ class CrosswordCreator():
             
         # Check the overlaps between neighboring variables
         for var in assignment:
+            # Get neighbors
             neighbors = self.crossword.neighbors(var)
             for neighbor in neighbors:
+                # Check if there is an overlap
                 if self.crossword.overlaps[var, neighbor]:
-                    if assignment[var][self.crossword.overlaps[var, neighbor][0]] != assignment[neighbor][self.crossword.overlaps[var, neighbor][1]]:
-                        return False
-
-        return True
+                    # Check if the values of the overlapping variables are the same and if neighbor has value assigned (is in assignment)
+                    if neighbor in assignment and (var, neighbor) in self.crossword.overlaps:
+                        print("Overlapping variables: ", var, " and ", neighbor)
+                        if assignment[var][self.crossword.overlaps[var, neighbor][0]] != assignment[neighbor][self.crossword.overlaps[var, neighbor][1]]:
+                            return False
         
 
     def order_domain_values(self, var, assignment):
