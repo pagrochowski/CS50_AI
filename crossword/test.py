@@ -18,35 +18,28 @@ def main():
 
     assignment = {}
 
-    for var in crossword.variables:
-        print("Variable: ", var)
-        assignment[var] = None
-
-    #print("Current domains:", creator.domains)
-
     assignment[Variable(0, 1, 'across', 3)] = "SIX"
     assignment[Variable(0, 1, 'down', 5)] = "SEVEN"
     assignment[Variable(4, 1, 'across', 4)] = "NINE"
     assignment[Variable(1, 4, 'down', 4)] = "FIVE"
 
-    # Check variable neighbors
-    neighbors = creator.crossword.neighbors(Variable(0, 1, 'across', 3))
-    # Variable(0, 1, 'down', 5)
-    print("Neighbors: ", neighbors)
-    first_neighbor = list(neighbors)[0]
+    creator.enforce_node_consistency()
 
+def test_enforce_node_consistency():
 
-    # Overlap between SIX and SEVEN
-    overlap = creator.crossword.overlaps[Variable(0, 1, 'across', 3), first_neighbor]
+    # Parse command-line arguments
+    structure = "data/structure0.txt"
+    words = "data/words0.txt"
 
-    print("Overlap: ", overlap)
+    # Generate crossword
+    crossword = Crossword(structure, words)
+    creator = CrosswordCreator(crossword)
 
-    # Check first character of SIX is the same as the first character of SEVEN
-    print("First (overlapped) character of SIX: ", assignment[Variable(0, 1, 'across', 3)][overlap[0]])
-    print("First (overlapped) character of SEVEN: ", assignment[Variable(0, 1, 'down', 5)][overlap[1]])
+    # Call enforce_node_consistency
+    creator.enforce_node_consistency()
 
-    
-
+    # Assert that only correct words are in the domains
+    assert creator.domains == {Variable(0, 1, 'down', 5): {'EIGHT', 'THREE', 'SEVEN'}, Variable(1, 4, 'down', 4): {'NINE', 'FOUR', 'FIVE'}, Variable(4, 1, 'across', 4): {'NINE', 'FOUR', 'FIVE'}, Variable(0, 1, 'across', 3): {'ONE', 'TEN', 'TWO', 'SIX'}}  
 
 
 def test_consistent():
