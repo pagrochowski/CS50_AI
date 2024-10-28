@@ -136,10 +136,7 @@ class CrosswordCreator():
         Check if there is a corresponding value in self.domains[y] that satisfies the constraints.
         If no such value exists, remove the value from self.domains[x] and set revised to True.
         """
-        print("Revising ", x, " and ", y)
-
-        print("Domains before revision: \n", self.domains[x], " and \n", self.domains[y])
-
+        
         # Initiate revised flag
         revised = False
 
@@ -158,23 +155,17 @@ class CrosswordCreator():
                 if x_value != y_value:
                     # Create an assignment of x and y
                     assignment = {}
-                    print("x_value: ", x_value, " and y_value: ", y_value)
                     assignment[x] = x_value
                     assignment[y] = y_value
-                    print("Assignment: ", assignment)
 
                     # Check if assignment is consistent
                     if self.consistent(assignment):
-                        print("Consistent: ", x_value, " and ", y_value)
+
                         # Yes it is consistent, set satisfied to True
                         satisfied = True
-                        
-                    else:
-                        print("Inconsistent: ", x_value, " and ", y_value)
 
             # If there is no value in self.domains[y] that satisfies the constraints, remove the value from self.domains[x]
             if not satisfied:
-                print("Removing ", x_value, " from ", x)
                 removals.add(x_value)
                 revised = True
         
@@ -182,11 +173,9 @@ class CrosswordCreator():
         for removal in removals:
             self.domains[x].remove(removal)
 
-        print("Domains after revision: \n", self.domains[x], " and \n", self.domains[y])
         return revised
                     
         
-
     def ac3(self, arcs=None):
         """
         Update `self.domains` such that each variable is arc consistent.
@@ -195,8 +184,68 @@ class CrosswordCreator():
 
         Return True if arc consistency is enforced and no domains are empty;
         return False if one or more domains end up empty.
+
+        Initialize the Queue: If arcs is None, you need to initialize the queue 
+        with all arcs in the problem. Otherwise, use the provided arcs.
+
+        Process the Queue: While the queue is not empty, remove an arc from the 
+        queue and make the variables arc consistent.
+
+        Revise Domains: For each arc, revise the domain of the first variable. 
+        If the domain of a variable is revised, add all neighboring arcs back to the queue.
+
+        Check for Empty Domains: If any domain becomes empty, return False. 
+        If the queue is processed without empty domains, return True.
         """
-        raise NotImplementedError
+        
+        # Initialise arc queue
+        if arcs is None:
+            arcs = []
+            # Add all arcs in the problem
+            for var1 in self.crossword.variables:
+                for var2 in self.crossword.neighbors(var1):
+                    if var1 != var2:
+                        arcs.append((var1, var2))
+
+        else:
+            print("Arcs provided: ", arcs)
+
+
+        print("Number of arcs to process: ", len(arcs))
+        for arc in arcs:
+            print("Arc: ", arc)
+
+        # Process queue
+        while len(arcs) > 0:
+        # Run the loop once
+        #for _ in range(1):
+            # Remove an arc from the queue
+            arc = arcs.pop()
+            var1 = arc[0]
+            var2 = arc[1]
+            print("Arc popped: ", arc)
+            # Make the variables arc consistent
+            if self.revise(var1, var2):
+                print("Revised: ", var1, var2)
+                # If the domain of a variable is revised, add all neighboring arcs back to the queue
+                print("Var1 neighbors: ", self.crossword.neighbors(var1))
+                for var3 in self.crossword.neighbors(var1):
+                    if var3 != var1 and var3 != var2:
+                        print("Adding new arcs: ")
+                        print((var3, var1))
+                        print((var3, var2))
+                        arcs.append((var3, var1))
+                        arcs.append((var3, var2))
+            else: 
+                print("Not revised: ", var1, var2)
+       
+        # Check for empty domains
+        for var in self.crossword.variables:
+            if len(self.domains[var]) == 0:
+                print("Domain ", var, " is empty")
+                return False
+        return True
+
 
     def assignment_complete(self, assignment):
         """
@@ -220,13 +269,13 @@ class CrosswordCreator():
             if assignment[var] not in unique_vars:
                 unique_vars.add(assignment[var])
             else:
-                print("Variable ", var, " has a duplicate value: ", assignment[var])
+                #print("Variable ", var, " has a duplicate value: ", assignment[var])
                 return False
             
         # Check if all words fit in the crossword puzzle
         for var in assignment:
             if len(assignment[var]) != var.length:
-                print("Variable ", var, " has an incorrect length: ", assignment[var])
+                #print("Variable ", var, " has an incorrect length: ", assignment[var])
                 return False
             
         # Check the overlaps between neighboring variables
@@ -238,9 +287,9 @@ class CrosswordCreator():
                 if self.crossword.overlaps[var, neighbor]:
                     # Check if the values of the overlapping variables are the same and if neighbor has value assigned (is in assignment)
                     if neighbor in assignment and (var, neighbor) in self.crossword.overlaps:
-                        print("Overlapping variables: ", var, " and ", neighbor)
+                        #print("Overlapping variables: ", var, " and ", neighbor)
                         if assignment[var][self.crossword.overlaps[var, neighbor][0]] != assignment[neighbor][self.crossword.overlaps[var, neighbor][1]]:
-                            print("Overlapping variables have different values: ", assignment[var], " and ", assignment[neighbor])
+                            #print("Overlapping variables have different values: ", assignment[var], " and ", assignment[neighbor])
                             return False
 
         return True

@@ -16,12 +16,48 @@ def main():
     crossword = Crossword(structure, words)
     creator = CrosswordCreator(crossword)
 
-    assignment = {}
+    print("Original domains:")
+    for var in creator.domains:
+        print(var, creator.domains[var])
 
     creator.enforce_node_consistency()
 
-    creator.revise(Variable(0, 1, 'across', 3), Variable(0, 1, 'down', 5))
+    print("Domains after consistency check:")
+    for var in creator.domains:
+        print(var, creator.domains[var])
 
+    # Call ac3
+    creator.ac3()
+    arc_example = [(Variable(1, 4, 'down', 4), Variable(4, 1, 'across', 4))]
+    #creator.ac3(arc_example)
+
+    # print all the domains
+    print("Domains after AC3:")
+    for var in creator.domains:
+        print(var, creator.domains[var])
+
+    print(creator.domains)
+
+def test_ac3():
+
+    # Parse command-line arguments
+    structure = "data/structure0.txt"
+    words = "data/words0.txt"
+
+    # Generate crossword
+    crossword = Crossword(structure, words)
+    creator = CrosswordCreator(crossword)
+
+    # Call node consistency and ac3 
+    creator.enforce_node_consistency()
+    creator.ac3()
+
+    assert creator.domains == {
+    Variable(1, 4, 'down', 4): {'FIVE'},
+    Variable(0, 1, 'across', 3): {'SIX'},
+    Variable(4, 1, 'across', 4): {'NINE'},
+    Variable(0, 1, 'down', 5): {'SEVEN'}
+    }
 
 def test_revise():
 
@@ -55,7 +91,10 @@ def test_enforce_node_consistency():
     creator.enforce_node_consistency()
 
     # Assert that only correct words are in the domains
-    assert creator.domains == {Variable(0, 1, 'down', 5): {'EIGHT', 'THREE', 'SEVEN'}, Variable(1, 4, 'down', 4): {'NINE', 'FOUR', 'FIVE'}, Variable(4, 1, 'across', 4): {'NINE', 'FOUR', 'FIVE'}, Variable(0, 1, 'across', 3): {'ONE', 'TEN', 'TWO', 'SIX'}}  
+    assert creator.domains == {{Variable(0, 1, 'down', 5): {'EIGHT', 'THREE', 'SEVEN'}, 
+                                Variable(1, 4, 'down', 4): {'NINE', 'FOUR', 'FIVE'}, 
+                                Variable(4, 1, 'across', 4): {'NINE', 'FOUR', 'FIVE'}, 
+                                Variable(0, 1, 'across', 3): {'ONE', 'TEN', 'TWO', 'SIX'}}}
 
 
 def test_consistent():
