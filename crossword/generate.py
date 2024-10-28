@@ -140,22 +140,50 @@ class CrosswordCreator():
 
         print("Domains before revision: \n", self.domains[x], " and \n", self.domains[y])
 
-        # Assign value to x if there is a possible value for y
+        # Initiate revised flag
         revised = False
+
+        # Initiate empty set for removal
+        removals = set()
+
+        # Assign value to x if there is a possible value for y that satisfies the constraints
         for x_value in self.domains[x]:
+
+            # Initiate satisfied variable flag
+            satisfied = False
+
+            # Loop through each value in self.domains[y]
             for y_value in self.domains[y]:
+                # Exclude same values
                 if x_value != y_value:
+                    # Create an assignment of x and y
                     assignment = {}
                     print("x_value: ", x_value, " and y_value: ", y_value)
                     assignment[x] = x_value
                     assignment[y] = y_value
                     print("Assignment: ", assignment)
+
+                    # Check if assignment is consistent
                     if self.consistent(assignment):
                         print("Consistent: ", x_value, " and ", y_value)
+                        # Yes it is consistent, set satisfied to True
+                        satisfied = True
                         
                     else:
                         print("Inconsistent: ", x_value, " and ", y_value)
-                        revised = True
+
+            # If there is no value in self.domains[y] that satisfies the constraints, remove the value from self.domains[x]
+            if not satisfied:
+                print("Removing ", x_value, " from ", x)
+                removals.add(x_value)
+                revised = True
+        
+        # Remove values from self.domains[x] that do not satisfy the constraints
+        for removal in removals:
+            self.domains[x].remove(removal)
+
+        print("Domains after revision: \n", self.domains[x], " and \n", self.domains[y])
+        return revised
                     
         
 
@@ -192,11 +220,13 @@ class CrosswordCreator():
             if assignment[var] not in unique_vars:
                 unique_vars.add(assignment[var])
             else:
+                print("Variable ", var, " has a duplicate value: ", assignment[var])
                 return False
             
         # Check if all words fit in the crossword puzzle
         for var in assignment:
             if len(assignment[var]) != var.length:
+                print("Variable ", var, " has an incorrect length: ", assignment[var])
                 return False
             
         # Check the overlaps between neighboring variables
@@ -210,7 +240,10 @@ class CrosswordCreator():
                     if neighbor in assignment and (var, neighbor) in self.crossword.overlaps:
                         print("Overlapping variables: ", var, " and ", neighbor)
                         if assignment[var][self.crossword.overlaps[var, neighbor][0]] != assignment[neighbor][self.crossword.overlaps[var, neighbor][1]]:
+                            print("Overlapping variables have different values: ", assignment[var], " and ", assignment[neighbor])
                             return False
+
+        return True
         
 
     def order_domain_values(self, var, assignment):

@@ -23,6 +23,23 @@ def main():
     creator.revise(Variable(0, 1, 'across', 3), Variable(0, 1, 'down', 5))
 
 
+def test_revise():
+
+    # Parse command-line arguments
+    structure = "data/structure0.txt"
+    words = "data/words0.txt"
+
+    # Generate crossword
+    crossword = Crossword(structure, words)
+    creator = CrosswordCreator(crossword)
+
+    # Create consistencies
+    creator.enforce_node_consistency()
+    creator.revise(Variable(0, 1, 'across', 3), Variable(0, 1, 'down', 5))
+
+    # "One" value should not be in the domain anymore after revision
+    assert creator.domains[Variable(0, 1, 'across', 3)] == {'SIX', 'TEN', 'TWO'}
+
 
 def test_enforce_node_consistency():
 
