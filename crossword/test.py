@@ -18,36 +18,43 @@ def main():
 
     assignment = {}
 
+    creator.backtrack(assignment)
+
     # Assign values to variables
-    assignment[Variable(0, 1, 'across', 3)] = "SIX"
-    assignment[Variable(0, 1, 'down', 5)] = None
-    assignment[Variable(4, 1, 'across', 4)] = None
-    assignment[Variable(1, 4, 'down', 4)] = None
+    #assignment[Variable(0, 1, 'across', 3)] = "SIX"
+    #assignment[Variable(0, 1, 'down', 5)] = None
+    #assignment[Variable(4, 1, 'across', 4)] = None
+    #assignment[Variable(1, 4, 'down', 4)] = None
 
-    # Call consistent
-    consistent = creator.consistent(assignment)
-    print("Consistent: ", consistent)
+    # Call order_domain_values
+    #domain_values = creator.order_domain_values(Variable(0, 1, 'across', 3), assignment)
 
-    
+    #print(domain_values)
 
-    creator.enforce_node_consistency()
+  
+def test_backtrack():
+    # Parse command-line arguments
+    structure = "data/structure0.txt"
+    words = "data/words0.txt"
 
-    # Call ac3
-    creator.ac3()
-
-    # print all the domains
-    print("Domains after AC3:")
-    for var in creator.domains:
-        print(var, creator.domains[var])
+    # Generate crossword
+    crossword = Crossword(structure, words)
+    creator = CrosswordCreator(crossword)
 
     # Call backtracking search
     assignment = {}
+
+    # Ensure node and arc consistency 
+    creator.enforce_node_consistency()
+    creator.ac3()
     
-    print("Backtracking start:")
+    # Call backtracking search
     creator.backtrack(assignment)
 
-    print("Assignment after backtrack:", assignment)
-  
+    assert assignment == {Variable(4, 1, 'across', 4): 'NINE', 
+                          Variable(0, 1, 'down', 5): 'SEVEN', 
+                          Variable(0, 1, 'across', 3): 'SIX', 
+                          Variable(1, 4, 'down', 4): 'FIVE'}
 
 def test_ac3():
 

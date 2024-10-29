@@ -249,10 +249,20 @@ class CrosswordCreator():
         """
         Return True if `assignment` is complete (i.e., assigns a value to each
         crossword variable); return False otherwise.
+
+        :( assignment_complete identifies incomplete assignment
+        expected "False", not "True"
         """
+        # Check if all variables have a value
         for var in assignment:
             if assignment[var] is None:
                 return False
+        
+        # Check if all variables are present in the assignment
+        for var in self.crossword.variables:
+            if var not in assignment:
+                return False
+
         return True
 
     def consistent(self, assignment):
@@ -308,25 +318,20 @@ class CrosswordCreator():
 
     def order_domain_values(self, var, assignment):
         """
-        Return a list of values in the domain of `var`, 
-        """
-        
-        values = []
-
-        for value in self.domains[var]:
-            values.append(value)
-
-        print(values)
-
-        return values
-       
-        """
-        in order by
+        Return a list of values in the domain of `var`, in order by
         the number of values they rule out for neighboring variables.
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
+        # Initialise empty list of values
+        values = []
+
+        # Loop through values in the domain
+        for value in self.domains[var]:
+            values.append(value)
         
+        return values
+       
 
     def select_unassigned_variable(self, assignment):
         """
@@ -336,9 +341,19 @@ class CrosswordCreator():
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
         """
-        for var in assignment:
-            if assignment[var] is None:
-                return var
+        # Get a list of unassigned variables
+        unassigned = [var for var in self.crossword.variables if var not in assignment]
+
+        # Get the number of remaining values for each variable
+        remaining_values = [len(self.domains[var]) for var in unassigned]
+
+        # Get the degree of each variable
+        degrees = [len(self.crossword.neighbors(var)) for var in unassigned]
+
+        # Return the variable with the minimum number of remaining values
+        # and the highest degree
+        return min(unassigned, key=lambda var: (remaining_values[unassigned.index(var)], degrees[unassigned.index(var)]))
+
 
     def backtrack(self, assignment):
         """
@@ -364,11 +379,6 @@ class CrosswordCreator():
         remove {var = value} from assignment
         return failure
         """
-        if not assignment:
-            print("The assignment is empty, filling in and restarting backtrack,")
-            for var in self.crossword.variables:
-                assignment[var] = None
-            return self.backtrack(assignment)
         print("Assignment received in backtrack: ")
         for var in assignment:
             print(var, assignment[var])
