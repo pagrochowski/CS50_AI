@@ -18,7 +18,7 @@ def main():
 
     assignment = {}
 
-    creator.backtrack(assignment)
+    #creator.backtrack(assignment)
 
     # Assign values to variables
     #assignment[Variable(0, 1, 'across', 3)] = "SIX"
@@ -27,7 +27,7 @@ def main():
     #assignment[Variable(1, 4, 'down', 4)] = None
 
     # Call order_domain_values
-    #domain_values = creator.order_domain_values(Variable(0, 1, 'across', 3), assignment)
+    domain_values = creator.order_domain_values(Variable(0, 1, 'across', 3), assignment)
 
     #print(domain_values)
 
@@ -238,9 +238,6 @@ def test_order_domain_values():
     # Create an assignment
     assignment = {}
 
-    for var in crossword.variables:
-        assignment[var] = None
-
     # Select an unassigned variable
     variable = creator.select_unassigned_variable(assignment)
 
@@ -263,9 +260,6 @@ def test_select_unassigned_variable():
 
     # Create an assignment
     assignment = {}
-
-    for var in crossword.variables:
-        assignment[var] = None
 
     # Select an unassigned variable
     variable = creator.select_unassigned_variable(assignment)

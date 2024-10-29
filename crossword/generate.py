@@ -323,15 +323,44 @@ class CrosswordCreator():
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
-        # Initialise empty list of values
-        values = []
+        # Initialise a list of values with scores 0
+        value_scores = {value: 0 for value in self.domains[var]}
 
-        # Loop through values in the domain
+        # Store original assignment
+        original_assignment = assignment.copy()
+
+        print("Original assignment:")
+        for each_var in original_assignment:
+            print(each_var, original_assignment[each_var])
+
+        # Test each value of the var's domain
         for value in self.domains[var]:
-            values.append(value)
+            for neighbor in self.crossword.neighbors(var):
+                # Check if neighbor has value assigned
+                if neighbor not in assignment:
+                    # Check if there is an overlap
+                    if self.crossword.overlaps[var, neighbor]:
+                        # Test each value of the neighbor's domain
+                        for neighbor_value in self.domains[neighbor]:
+                            # Assign value to var
+                            assignment[var] = value
+                            # Assign value to neighbor
+                            assignment[neighbor] = neighbor_value
+                            # Check if assignment is consistent
+                            if not self.consistent(assignment):
+                                # Increment value_scores
+                                value_scores[value] += 1
+
+                            # Reset assignment
+                            assignment = original_assignment.copy()
         
-        return values
-       
+        # Return list of values with scores
+        sorted_values = sorted(value_scores, key=value_scores.get)
+        print("Value scores: ", value_scores)
+
+        return sorted_values
+
+
 
     def select_unassigned_variable(self, assignment):
         """
