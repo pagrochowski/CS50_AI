@@ -16,27 +16,38 @@ def main():
     crossword = Crossword(structure, words)
     creator = CrosswordCreator(crossword)
 
-    print("Original domains:")
-    for var in creator.domains:
-        print(var, creator.domains[var])
+    assignment = {}
+
+    # Assign values to variables
+    assignment[Variable(0, 1, 'across', 3)] = "SIX"
+    assignment[Variable(0, 1, 'down', 5)] = None
+    assignment[Variable(4, 1, 'across', 4)] = None
+    assignment[Variable(1, 4, 'down', 4)] = None
+
+    # Call consistent
+    consistent = creator.consistent(assignment)
+    print("Consistent: ", consistent)
+
+    
 
     creator.enforce_node_consistency()
 
-    print("Domains after consistency check:")
-    for var in creator.domains:
-        print(var, creator.domains[var])
-
     # Call ac3
     creator.ac3()
-    arc_example = [(Variable(1, 4, 'down', 4), Variable(4, 1, 'across', 4))]
-    #creator.ac3(arc_example)
 
     # print all the domains
     print("Domains after AC3:")
     for var in creator.domains:
         print(var, creator.domains[var])
 
-    print(creator.domains)
+    # Call backtracking search
+    assignment = {}
+    
+    print("Backtracking start:")
+    creator.backtrack(assignment)
+
+    print("Assignment after backtrack:", assignment)
+  
 
 def test_ac3():
 
@@ -91,10 +102,10 @@ def test_enforce_node_consistency():
     creator.enforce_node_consistency()
 
     # Assert that only correct words are in the domains
-    assert creator.domains == {{Variable(0, 1, 'down', 5): {'EIGHT', 'THREE', 'SEVEN'}, 
-                                Variable(1, 4, 'down', 4): {'NINE', 'FOUR', 'FIVE'}, 
-                                Variable(4, 1, 'across', 4): {'NINE', 'FOUR', 'FIVE'}, 
-                                Variable(0, 1, 'across', 3): {'ONE', 'TEN', 'TWO', 'SIX'}}}
+    assert creator.domains == {Variable(0, 1, 'down', 5): {'EIGHT', 'THREE', 'SEVEN'},  
+                               Variable(1, 4, 'down', 4): {'NINE', 'FOUR', 'FIVE'}, 
+                               Variable(4, 1, 'across', 4): {'NINE', 'FOUR', 'FIVE'}, 
+                               Variable(0, 1, 'across', 3): {'ONE', 'TEN', 'TWO', 'SIX'}}
 
 
 def test_consistent():
@@ -113,7 +124,7 @@ def test_consistent():
     for var in crossword.variables:
         assignment[var] = None
 
-    # Assign values tovariables
+    # Assign values to variables
     assignment[Variable(0, 1, 'across', 3)] = "SIX"
     assignment[Variable(0, 1, 'down', 5)] = "SEVEN"
     assignment[Variable(4, 1, 'across', 4)] = "NINE"
@@ -158,6 +169,18 @@ def test_consistent():
     # Return to original assignment
     assignment[Variable(0, 1, 'across', 3)] = "SIX"
 
+    # Testing uniques with None values
+
+    # Assign values to variables
+    assignment[Variable(0, 1, 'across', 3)] = "SIX"
+    assignment[Variable(0, 1, 'down', 5)] = None
+    assignment[Variable(4, 1, 'across', 4)] = None
+    assignment[Variable(1, 4, 'down', 4)] = None
+
+    # Call consistent
+    consistent = creator.consistent(assignment)
+
+    assert consistent == True
 
 def test_assignment_complete():
 

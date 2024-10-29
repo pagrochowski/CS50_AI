@@ -207,42 +207,40 @@ class CrosswordCreator():
                     if var1 != var2:
                         arcs.append((var1, var2))
 
-        else:
-            print("Arcs provided: ", arcs)
+        #else:
+            #print("Arcs provided: ", arcs)
 
 
-        print("Number of arcs to process: ", len(arcs))
-        for arc in arcs:
-            print("Arc: ", arc)
+        #print("Number of arcs to process: ", len(arcs))
+        #for arc in arcs:
+            #print("Arc: ", arc)
 
         # Process queue
         while len(arcs) > 0:
-        # Run the loop once
-        #for _ in range(1):
             # Remove an arc from the queue
             arc = arcs.pop()
             var1 = arc[0]
             var2 = arc[1]
-            print("Arc popped: ", arc)
+            #print("Arc popped: ", arc)
             # Make the variables arc consistent
             if self.revise(var1, var2):
-                print("Revised: ", var1, var2)
+                #print("Revised: ", var1, var2)
                 # If the domain of a variable is revised, add all neighboring arcs back to the queue
-                print("Var1 neighbors: ", self.crossword.neighbors(var1))
+                #print("Var1 neighbors: ", self.crossword.neighbors(var1))
                 for var3 in self.crossword.neighbors(var1):
                     if var3 != var1 and var3 != var2:
-                        print("Adding new arcs: ")
-                        print((var3, var1))
-                        print((var3, var2))
+                        #print("Adding new arcs: ")
+                        #print((var3, var1))
+                        #print((var3, var2))
                         arcs.append((var3, var1))
                         arcs.append((var3, var2))
-            else: 
-                print("Not revised: ", var1, var2)
+            #else: 
+                #print("Not revised: ", var1, var2)
        
         # Check for empty domains
         for var in self.crossword.variables:
             if len(self.domains[var]) == 0:
-                print("Domain ", var, " is empty")
+                #print("Domain ", var, " is empty")
                 return False
         return True
 
@@ -266,24 +264,37 @@ class CrosswordCreator():
         # Check if each variable has a unique value
         unique_vars = set()
         for var in assignment:
-            if assignment[var] not in unique_vars:
-                unique_vars.add(assignment[var])
-            else:
-                #print("Variable ", var, " has a duplicate value: ", assignment[var])
-                return False
+            #print(f"Checking variable {var} with value {assignment[var]}")
+            if assignment[var] is not None:
+                #print(f"Value is not None: {assignment[var]}")
+                if assignment[var] not in unique_vars:
+                    unique_vars.add(assignment[var])
+                else:
+                    #print("Variable ", var, " has a duplicate value: ", assignment[var])
+                    return False
             
+        
         # Check if all words fit in the crossword puzzle
         for var in assignment:
-            if len(assignment[var]) != var.length:
-                #print("Variable ", var, " has an incorrect length: ", assignment[var])
-                return False
-            
+            if assignment[var] is not None:
+                if len(assignment[var]) != var.length:
+                    #print("Variable ", var, " has an incorrect length: ", assignment[var])
+                    return False
+
+        
         # Check the overlaps between neighboring variables
         for var in assignment:
-            # Get neighbors
+            # Get neighbors for variables with value
+            if assignment[var] is None:
+                #print("Variable ", var, " has no value assigned")
+                continue
             neighbors = self.crossword.neighbors(var)
             for neighbor in neighbors:
                 # Check if there is an overlap
+                if neighbor in assignment and assignment[neighbor] is None:
+                    #print("Neighbor is None: ", neighbor)
+                    continue
+                #print("Checking overlap: ", var, " and ", neighbor)
                 if self.crossword.overlaps[var, neighbor]:
                     # Check if the values of the overlapping variables are the same and if neighbor has value assigned (is in assignment)
                     if neighbor in assignment and (var, neighbor) in self.crossword.overlaps:
@@ -291,7 +302,7 @@ class CrosswordCreator():
                         if assignment[var][self.crossword.overlaps[var, neighbor][0]] != assignment[neighbor][self.crossword.overlaps[var, neighbor][1]]:
                             #print("Overlapping variables have different values: ", assignment[var], " and ", assignment[neighbor])
                             return False
-
+           
         return True
         
 
@@ -337,8 +348,60 @@ class CrosswordCreator():
         `assignment` is a mapping from variables (keys) to words (values).
 
         If no assignment is possible, return None.
+
+        function Backtrack(assignment, csp):
+
+        if assignment complete:
+            return assignment
+
+        var = Select-Unassigned-Var(assignment, csp)
+        for value in Domain-Values(var, assignment, csp):
+        if value consistent with assignment:
+        add {var = value} to assignment
+        result = Backtrack(assignment, csp)
+        if result ≠ failure:
+        return result
+        remove {var = value} from assignment
+        return failure
         """
-        raise NotImplementedError
+        if not assignment:
+            print("The assignment is empty, filling in and restarting backtrack,")
+            for var in self.crossword.variables:
+                assignment[var] = None
+            return self.backtrack(assignment)
+        print("Assignment received in backtrack: ")
+        for var in assignment:
+            print(var, assignment[var])
+
+        # Check if assignment is completed
+        if self.assignment_complete(assignment):
+            print("Assignment complete")
+            return assignment
+        else:
+            print("Assignment not complete, continuing the loop")
+            # Select an unassigned variable
+            var = self.select_unassigned_variable(assignment)
+            print("Selecting variable: ", var)
+            # Order domain values and assign to variable
+            for value in self.order_domain_values(var, assignment):
+                print("Value: ", value)
+                # Make variable assignment
+                assignment[var] = value
+                print("Assignment: ")
+                for var in assignment:
+                    print(var, assignment[var])
+                # Call consistent
+                if self.consistent(assignment):
+                    print("Consistent")
+                    # Call backtrack in case newly assigned variable is okay, keep going
+                    result = self.backtrack(assignment)
+                    if result is not None:
+                        #print("Feeding result to backtrack")
+                        return result
+                print("Consistent failed, variable unassigned:", var)
+                assignment[var] = None
+            print("Returning None")
+            return None
 
 
 def main():
