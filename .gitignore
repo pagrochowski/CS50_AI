@@ -11,5 +11,8 @@ env/
 # Ignore all files of a certain type
 *.pyc
 
+# Ignore image files
+*.ppm
+
 # Database
 # db.sqlite3
