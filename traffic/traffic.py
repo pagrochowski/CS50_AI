@@ -58,7 +58,29 @@ def load_data(data_dir):
     be a list of integer labels, representing the categories for each of the
     corresponding `images`.
     """
-    raise NotImplementedError
+    # Load images from a folder
+    images = []
+    labels = []
+
+    print("Data dir:", data_dir)
+
+    # Loop through each category
+    for i in range(NUM_CATEGORIES):
+        # Get the name of the category
+        category = os.path.join(data_dir, str(i))
+        print("Category:", category)
+        # Loop through each image in the category
+        for image in os.listdir(category):
+            # Load the image
+            img = cv2.imread(os.path.join(category, image))
+            # Resize the image
+            img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT))
+            # Add the image to the list
+            images.append(img)
+            # Add the label to the list
+            labels.append(i)
+
+    return images, labels
 
 
 def get_model():
@@ -67,7 +89,21 @@ def get_model():
     `input_shape` of the first layer is `(IMG_WIDTH, IMG_HEIGHT, 3)`.
     The output layer should have `NUM_CATEGORIES` units, one for each category.
     """
-    raise NotImplementedError
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Conv2D(32, (5, 5), activation="relu", input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)),
+        tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(128, activation="relu"),
+        tf.keras.layers.Dense(NUM_CATEGORIES, activation="softmax")
+    ])
+
+    model.compile(
+        optimizer="adam",
+        loss="categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    return model
 
 
 if __name__ == "__main__":
