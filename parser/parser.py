@@ -16,7 +16,8 @@ V -> "smiled" | "tell" | "were"
 """
 
 NONTERMINALS = """
-S -> NP VP | NP VP NP | NP VP NP PP | NP VP | NP VP PP | NP VP Conj VP| NP VP Conj S | NP VP Conj VP | S Conj VP PP
+S -> NP VP | NP VP NP | NP VP NP PP | NP VP | NP VP PP | NP VP Conj VP| 
+S -> NP VP Conj S | NP VP Conj VP | S Conj VP PP
 NP -> N | Det N | Adj N | Det Adj N | P N | Det Adj Adj N | Det Adj Adj Adj N
 VP -> V | V PP | V PP PP | V Adj | Adv V | V Adv | V NP | Adv V NP | V NP PP 
 PP -> P | P NP | P NP Adv 
@@ -68,7 +69,7 @@ def preprocess(sentence):
     """
     tokenized_sentence = nltk.word_tokenize(sentence)
     list_of_words = [word.lower() for word in tokenized_sentence if any(char.isalpha() for char in word)]
-    #print("list of words: ", list_of_words)
+    print("list of words: ", list_of_words)
     return list_of_words
 
 
@@ -78,27 +79,31 @@ def np_chunk(tree):
     A noun phrase chunk is defined as any subtree of the sentence
     whose label is "NP" that does not itself contain any other
     noun phrases as subtrees.
-
-    1. Check if the current subtree is an NP.
-    2. If it is, check if it contains any NP subtrees.
-    3. If it doesn't, add it to the noun_phrase_chunks list.
-    4. If it does, recursively call the helper function on its subtrees.
     """
-
-    # Collect noun phrase chunks
     noun_phrase_chunks = []
 
-    def chunk_helper(subtree):
-        for subtree in tree.subtrees():
-            #print("subtree: ", subtree)
-            if subtree.label() == "NP":
-                if not any(child.label() == "NP" for child in subtree):
-                    noun_phrase_chunks.append(subtree)
-                else:
-                    chunk_helper(subtree)
-                      
-    chunk_helper(tree)
-    return noun_phrase_chunks 
+    def contains_NP(subtree):
+        for child in subtree.subtrees():
+            if child != subtree and child.label() == "NP":
+                return True
+        return False
+
+
+    # Check each subtree of the main tree
+    for subtree in tree.subtrees():
+        # It has label NP
+        if subtree.label() == "NP":
+            #print("Subtree has NP label:", subtree)
+            # Loop through each child
+            if not contains_NP(subtree):
+                #print("Adding subtree to noun_phrase_chunks: ", subtree)
+                noun_phrase_chunks.append(subtree)
+            else:
+                #print("Subtree contains NP, skipping: ", subtree)
+                continue
+        
+                        
+    return noun_phrase_chunks
 
 
 if __name__ == "__main__":
