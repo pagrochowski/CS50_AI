@@ -1,6 +1,8 @@
 import sys
 import tensorflow as tf
 
+import numpy as np
+
 from PIL import Image, ImageDraw, ImageFont
 from transformers import AutoTokenizer, TFBertForMaskedLM
 
@@ -17,7 +19,9 @@ PIXELS_PER_WORD = 200
 
 
 def main():
-    text = input("Text: ")
+    #text = input("Text: ")
+
+    text = "I [MASK] to the market yesterday."
 
     # Tokenize input
     tokenizer = AutoTokenizer.from_pretrained(MODEL)
@@ -45,8 +49,17 @@ def get_mask_token_index(mask_token_id, inputs):
     Return the index of the token with the specified `mask_token_id`, or
     `None` if not present in the `inputs`.
     """
-    # TODO: Implement this function
-    raise NotImplementedError
+    # Convert tensor to numpy array
+    input_ids = inputs["input_ids"][0].numpy()
+
+    # Find the index of the mask token
+    token_index = 0
+    for id in input_ids:
+        if id == mask_token_id:
+            return token_index
+        token_index += 1
+
+    return None
 
 
 
@@ -54,9 +67,28 @@ def get_color_for_attention_score(attention_score):
     """
     Return a tuple of three integers representing a shade of gray for the
     given `attention_score`. Each value should be in the range [0, 255].
+    Attention weights passed as attention_score:
+    tf.Tensor(
+    [0.04115908 0.0348769  0.01906004 0.09509919 0.3494831  0.08030851
+    0.04886657 0.04040711 0.08138882 0.20935072], shape=(10,), dtype=float32)
     """
-    # TODO: Implement this function
-    raise NotImplementedError
+    #print("-------------------------------------------------------------")
+    #print("ATTENTION SCORE:")
+    #print(attention_score)
+    #print("attention score sum: " + str(np.sum(attention_score)))
+    #print("attention score mean: " + str(np.mean(attention_score)))
+    # Convert attention score tensor to numpy array
+    attention_score = attention_score.numpy()
+    
+    # Calculate the average attention score
+    #attention_score = np.mean(attention_score)
+    attention_score = np.max(attention_score)
+    #attention_score = np.multiply(attention_score, 1.0/np.sum(attention_score))
+    
+    # Scale the average to a shade of gray [0, 255]
+    shade = int(np.clip(attention_score * 255, 0, 255))
+    
+    return (shade, shade, shade)
 
 
 
@@ -70,13 +102,19 @@ def visualize_attentions(tokens, attentions):
     include both the layer number (starting count from 1) and head number
     (starting count from 1).
     """
-    # TODO: Update this function to produce diagrams for all layers and heads.
-    generate_diagram(
-        1,
-        1,
-        tokens,
-        attentions[0][0][0]
-    )
+    #print(attentions[0][0][0])
+    layers = 12
+    heads = 12
+
+    for layer in range(layers):
+        for head in range(heads):
+            generate_diagram(
+                layer + 1,
+                head + 1,
+                tokens,
+                attentions[layer][0][head]
+            )
+
 
 
 def generate_diagram(layer_number, head_number, tokens, attention_weights):

@@ -13,6 +13,7 @@ env/
 
 # Ignore image files
 *.ppm
+*.png
 
 # Database
 # db.sqlite3
